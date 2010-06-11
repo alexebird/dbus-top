@@ -11,6 +11,7 @@ class LineHandler:
                 LineHandler.current_message.add_line(line)
         else:
             complete_msg = LineHandler.current_message
-            complete_msg.parse()
+            if complete_msg:
+                complete_msg.parse()
             LineHandler.current_message = DbusMessage(line)
             return complete_msg
