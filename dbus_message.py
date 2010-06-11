@@ -7,5 +7,8 @@ class DbusMessage:
         self.lines.append(line)
 
     def print_msg(self):
-        for m in self.lines:
-            print m
+        print '\n'.join(self.lines)
+
+    def parse(self):
+        pass
+        # do some parsing
