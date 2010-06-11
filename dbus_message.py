@@ -14,10 +14,10 @@ class DbusMessage:
 
     def parse(self):
         first_line = self.lines[0]
-        body = self.lines[1:-1]
+        body = '\n'.join(self.lines[1:-1])
         tokens = shlex.split(first_line)
-        print first_line
-        #print tokens
+        print 'line: ', first_line
+        print 'tokens: ', tokens
 
         key_value_re = re.compile('\S+=[^=\s]+')
         arrow_re = re.compile('->')
@@ -25,23 +25,21 @@ class DbusMessage:
         curr_nonterm = ''
         nonterms = {}
         for t in tokens:
-            if key_value_re.match(t):
-                if curr_nonterm != '':
-                    #key, value = curr_nonterm.strip().split('=', 1)
-                    header_entity = curr_nonterm.strip().split('=', 1)
-                    #print key, value
-                    if len(nonterms) == 0:
-                        nonterms['message_type'] = header_entity
-                    else:
-                        nonterms[header_entity[0]] = header_entity[1]
-                curr_nonterm = t
-            elif arrow_re.match(t):
-                pass
-            else:
-                # algo won't work if there is a word without a '=' as the last word in the string
+            if arrow_re.match(t):
+                continue
+
+            if key_value_re.match(t) == None:
                 curr_nonterm += ' ' + t
-                #if t == tokens[-1]:
-                    #nonterms.append(curr_nonterm.strip())
+                i = tokens.index(t)
+                if key_value_re.match(tokens[i + 1]) or i + 1 >= len(tokens):
+                    if len(nonterms) == 0:
+                        nonterms['message_type'] = curr_nonterm.strip()
+            else:
+                curr_nonterm = t
+                key, value = curr_nonterm.split('=', 1)
+                nonterms[key.strip()] = value.strip()
+
+        nonterms['body'] = body
 
         for k,v in nonterms.iteritems():
             print '%-15s => %s' % (k, v)
