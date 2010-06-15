@@ -2,3 +2,4 @@ Todo:
 - figure out why dbus-monitor processes are sticking around
 - write parser for dbus messages
 	- think 536
+- write wiki page for project
