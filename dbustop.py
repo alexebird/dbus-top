@@ -5,6 +5,12 @@ import os
 import line_handler
 import dbus_server
 
+if len(sys.argv) != 2:
+    print 'Usage...'
+    exit(1)
+
+argport = int(sys.argv[1])
+
 fd_r, fd_w = os.pipe()
 
 try:
@@ -21,7 +27,7 @@ else:
     os.dup2(fd_r, sys.stdin.fileno())
     dbusmon_output = os.fdopen(fd_r)
     lh = line_handler.LineHandler()
-    server = dbus_server.DbusServer(50007)
+    server = dbus_server.DbusServer(argport)
     server.start()
     while True:
         line = dbusmon_output.readline().rstrip()

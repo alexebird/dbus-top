@@ -1,9 +1,11 @@
 import shlex
 import re
+import pickle
 
 class DbusMessage:
     def __init__(self, first_line):
         self.lines = []
+        self.message = None
         self.add_line(first_line)
 
     def add_line(self, line):
@@ -11,6 +13,9 @@ class DbusMessage:
 
     def print_msg(self):
         print '\n'.join(self.lines)
+
+    def serialize(self):
+        return pickle.dumps(self.message)
 
     def parse(self):
         first_line = self.lines[0]
@@ -35,6 +40,7 @@ class DbusMessage:
                 curr_nonterm = t
                 key, value = curr_nonterm.split('=', 1)
                 nonterms[key.strip()] = value.strip()
-        nonterms['body'] = body
+        #nonterms['body'] = body
+        self.message = nonterms
         #for k,v in nonterms.iteritems():
             #print '%-15s => %s' % (k, v)
