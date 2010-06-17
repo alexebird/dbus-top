@@ -1,10 +1,9 @@
 #!/usr/bin/python
 
 import sys
-#sys.path.append('.')
-#print sys.path
 import os
 import line_handler
+import dbus_server
 
 fd_r, fd_w = os.pipe()
 
@@ -21,9 +20,14 @@ if rv == 0:
 else:
     os.dup2(fd_r, sys.stdin.fileno())
     dbusmon_output = os.fdopen(fd_r)
+    lh = line_handler.LineHandler()
+    server = dbus_server.DbusServer(50007)
+    server.start()
     while True:
         line = dbusmon_output.readline().rstrip()
-        msg = line_handler.LineHandler.handle_line(line)
+        msg = lh.handle_line(line)
         if msg:
-            print '=============================='
+            #print '=============================='
             #msg.print_msg()
+            print 'got msg'
+            server.send_to_clients(msg)

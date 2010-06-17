@@ -36,5 +36,5 @@ class DbusMessage:
                 key, value = curr_nonterm.split('=', 1)
                 nonterms[key.strip()] = value.strip()
         nonterms['body'] = body
-        for k,v in nonterms.iteritems():
-            print '%-15s => %s' % (k, v)
+        #for k,v in nonterms.iteritems():
+            #print '%-15s => %s' % (k, v)
