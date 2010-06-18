@@ -37,8 +37,6 @@ while 1:
         if data != 'registered':
             msg = pickle.loads(data)
             print msg
-            #for k,v in msg:
-                #print '%-15s => %s' % (k, v)
 print 'sending close'
 s.send('CLOSE')
 s.close()

@@ -12,7 +12,7 @@ class DbusMessage:
         self.lines.append(line)
 
     def print_msg(self):
-        print '\n'.join(self.lines)
+        print 'dbus-message: %s...' % self.lines[0][0:40]
 
     def serialize(self):
         return pickle.dumps(self.message)
