@@ -40,3 +40,7 @@ while 1:
 print 'sending close'
 s.send('CLOSE')
 s.close()
+
+class DBusClient:
+    def __init__(self):
+        pass

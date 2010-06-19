@@ -22,3 +22,7 @@ curses.nocbreak()
 stdscr.keypad(0)
 curses.echo()
 curses.endwin()
+
+class CursesClient(DBusClient):
+    def __init__(self):
+        pass

@@ -1,6 +1,7 @@
 import socket
 import select
 from threading import Thread
+import client_registrar
 
 class DbusServer(Thread):
     def __init__(self, port, should_run_lock):
@@ -9,7 +10,7 @@ class DbusServer(Thread):
         self.port = port               # Arbitrary non-privileged port
         self.should_run_lock = should_run_lock
         self.backlog = 5
-        self.client_registrar = ClientRegistrar()
+        self.client_registrar = client_registrar.ClientRegistrar()
         self.should_run = True
         self.running = False
 
