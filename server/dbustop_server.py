@@ -3,12 +3,12 @@ import select
 from threading import Thread
 import client_registrar
 
-class DbusServer(Thread):
-    def __init__(self, port, should_run_lock):
+class DbustopServer(Thread):
+    def __init__(self, port):
         Thread.__init__(self)
         self.host = ''                 # Symbolic name meaning all available interfaces
         self.port = port               # Arbitrary non-privileged port
-        self.should_run_lock = should_run_lock
+        self.should_run_lock = threading.Lock()
         self.backlog = 5
         self.client_registrar = client_registrar.ClientRegistrar()
         self.should_run = True
@@ -20,7 +20,6 @@ class DbusServer(Thread):
         self.socket.bind((self.host, self.port))
         self.socket.listen(self.backlog)
         self.running = True
-        #while 1:
         while self.should_run == True:
             rv = select.select([self.socket], [], [], 0.2)
             if len(rv[0]) > 0:

@@ -1,5 +1,5 @@
 import re
-import dbus_message
+from common import dbus_message
 
 class LineHandler:
     def __init__(self):
