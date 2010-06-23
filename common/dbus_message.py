@@ -4,22 +4,22 @@ import pickle
 
 class DbusMessage:
     def __init__(self, first_line):
-        self.lines = []
-        self.message = None
+        self.raw_lines = []
+        self.parsed_message = None
         self.add_line(first_line)
 
     def add_line(self, line):
-        self.lines.append(line)
+        self.raw_lines.append(line)
 
     def print_msg(self):
-        print 'dbus-message: %s...' % self.lines[0][0:40]
+        print 'dbus-message: %s...' % self.raw_lines[0][0:40]
 
     def serialize(self):
-        return pickle.dumps(self.message)
+        return pickle.dumps(self.parsed_message)
 
     def parse(self):
-        first_line = self.lines[0]
-        body = '\n'.join(self.lines[1:-1])
+        first_line = self.raw_lines[0]
+        body = '\n'.join(self.raw_lines[1:-1])
         tokens = shlex.split(first_line)
         #print 'line: ', first_line
         #print 'tokens: ', tokens
@@ -41,6 +41,6 @@ class DbusMessage:
                 key, value = curr_nonterm.split('=', 1)
                 nonterms[key.strip()] = value.strip()
         #nonterms['body'] = body
-        self.message = nonterms
+        self.parsed_message = nonterms
         #for k,v in nonterms.iteritems():
             #print '%-15s => %s' % (k, v)
