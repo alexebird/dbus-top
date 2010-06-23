@@ -5,8 +5,10 @@ class DbusMonitorMonitor:
     def __init__(self, dbusmonitor_fd):
         #self.dbusmonitor_fd = dbusmonitor_fd
         self.dbm_file = os.fdopen(dbusmonitor_fd)
-        #self.db_server = dbus_server.DbustopServer(argport)
         self.should_run = True
+
+    def set_server(self, server):
+        self.db_server = server
 
     def run(self):
         lh = line_handler.LineHandler()

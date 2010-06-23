@@ -1,5 +1,6 @@
 import socket
 import select
+import threading
 from threading import Thread
 import client_registrar
 
@@ -13,6 +14,7 @@ class DbustopServer(Thread):
         self.client_registrar = client_registrar.ClientRegistrar()
         self.should_run = True
         self.running = False
+        print 'dbustop-server listening on %d' % self.port
 
     def run(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
