@@ -28,23 +28,30 @@ class DbustopClient(Thread):
             rv = select.select([self.socket], [], [], 0.1)
             if len(rv[0]) > 0:
                 data = self.socket.recv(4096 * 100)
-                if data == 'registered':
-                    print 'registered with %s:%d' % \
-                        (self.connection_args[0], self.connection_args[1])
-                elif len(data) > 0:
-                    msg = pickle.loads(data)
-                    print msg
+                #if data == 'registered':
+                    #print 'registered with %s:%d' % \
+                        #(self.connection_args[0], self.connection_args[1])
+                if len(data) > 0:
+                    try:
+                        msg = pickle.loads(data)
+                    except IndexError:
+                        pass
+                    #print msg
+                    self.view.refresh()
         self.running = False
-        print 'sending close'
+        #print 'sending close'
         self.socket.send('CLOSE')
         self.socket.close()
 
     def stop(self):
         if self.running:
-            print 'stopping client'
+            #print 'stopping client'
             self.set_should_run_synced(False)
 
     def set_should_run_synced(self, newval):
         self.should_run_lock.acquire()
         self.should_run = False
         self.should_run_lock.release()
+
+    def set_view(self, view):
+        self.view = view

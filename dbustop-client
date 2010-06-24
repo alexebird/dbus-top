@@ -3,15 +3,21 @@
 import sys, signal
 from optparse import OptionParser
 from client.dbustop_client import DbustopClient
+from client.curses_ui import CursesUI
 
 def main():
     global dbusclient
     options, args = handle_args()
     signal.signal(signal.SIGINT, sigint_handler)
     dbusclient = DbustopClient(options.host, options.port)
+    curses_ui = CursesUI()
+    dbusclient.set_view(curses_ui)
+    curses_ui.start()
     dbusclient.start()
-    while dbusclient.isAlive():
+    while dbusclient.isAlive() and curses_ui.isAlive():
         dbusclient.join(1)
+    dbusclient.stop()
+    curses_ui.stop()
 
 def handle_args():
     parser = OptionParser()
@@ -21,7 +27,7 @@ def handle_args():
             help='The host to connect to.')
     parser.add_option('-p', '--port',
             action='store', type='int', dest='port',
-            help='The port to connect to.')
+            help='The port to use.')
     return parser.parse_args()
 
 def sigint_handler(signum, frame):

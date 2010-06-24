@@ -35,7 +35,7 @@ class DbusMessage:
                 i = tokens.index(t)
                 if (key_value_re.match(tokens[i + 1]) or i + 1 >= len(tokens)) and len(header_entries) == 0:
                     header_entries['message_type'] = curr_header_entry.strip()
-                else:
+                elif key_value_re.match(curr_header_entry):
                     key, value = curr_header_entry.split('=', 1)
                     header_entries[key.strip()] = value.strip()
             # Text containing a '=' is appended to the previous key's value 
