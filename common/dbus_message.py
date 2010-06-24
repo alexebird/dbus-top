@@ -17,29 +17,33 @@ class DbusMessage:
         return pickle.dumps(self.header)
 
     def parse(self):
-        first_line = self.raw_lines[0]
+        header_line = self.raw_lines[0]
         body = '\n'.join(self.raw_lines[1:-1])
-        tokens = shlex.split(first_line)
-        #print 'line: ', first_line
-        #print 'tokens: ', tokens
+        tokens = shlex.split(header_line)
         key_value_re = re.compile('\S+=[^=\s]+')
         arrow_re = re.compile('->')
-        curr_nonterm = ''
-        nonterms = {}
+        curr_header_entry = ''
+        header_entries = {}
+        #import pdb; pdb.set_trace()
         for t in tokens:
+            # Skip the '->' in the header
             if arrow_re.match(t):
                 continue
-            if key_value_re.match(t) == None:
-                curr_nonterm += ' ' + t
+            # Text not matching the 'key=value' pattern
+            elif key_value_re.match(t) == None:
+                curr_header_entry += ' ' + t
                 i = tokens.index(t)
-                if key_value_re.match(tokens[i + 1]) or i + 1 >= len(tokens):
-                    if len(nonterms) == 0:
-                        nonterms['message_type'] = curr_nonterm.strip()
+                if (key_value_re.match(tokens[i + 1]) or i + 1 >= len(tokens)) and len(header_entries) == 0:
+                    header_entries['message_type'] = curr_header_entry.strip()
+                else:
+                    key, value = curr_header_entry.split('=', 1)
+                    header_entries[key.strip()] = value.strip()
+            # Text containing a '=' is appended to the previous key's value 
             else:
-                curr_nonterm = t
-                key, value = curr_nonterm.split('=', 1)
-                nonterms[key.strip()] = value.strip()
+                curr_header_entry = t
+                key, value = curr_header_entry.split('=', 1)
+                header_entries[key.strip()] = value.strip()
         self.body = body
-        self.header = nonterms
+        self.header = header_entries
         #for k,v in nonterms.iteritems():
             #print '%-15s => %s' % (k, v)
