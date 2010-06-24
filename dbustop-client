@@ -1,0 +1,40 @@
+#!/usr/bin/python
+
+import sys, signal
+from optparse import OptionParser
+from client.dbustop_client import DbustopClient
+
+def main():
+    global dbusclient
+    options, args = handle_args()
+    signal.signal(signal.SIGINT, sigint_handler)
+    dbusclient = DbustopClient(options.host, options.port)
+    dbusclient.start()
+    while dbusclient.isAlive():
+        dbusclient.join(1)
+
+def handle_args():
+    parser = OptionParser()
+    parser.set_defaults(host='localhost', port=5006)
+    parser.add_option('-s', '--host',
+            action='store', type='string', dest='host',
+            help='The host to connect to.')
+    parser.add_option('-p', '--port',
+            action='store', type='int', dest='port',
+            help='The port to connect to.')
+    return parser.parse_args()
+
+def sigint_handler(signum, frame):
+    global dbusclient
+    dbusclient.stop()
+
+if __name__ == "__main__":
+    status = 0
+    try:
+        main()
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        status = 1
+    print 'exit status: %d' % status
+    sys.exit(status)

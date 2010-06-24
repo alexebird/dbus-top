@@ -1,5 +1,5 @@
 import re
-from common import dbus_message
+from common.dbus_message import DbusMessage
 
 class LineHandler:
     def __init__(self):
@@ -13,5 +13,5 @@ class LineHandler:
             complete_msg = self.current_message
             if complete_msg:
                 complete_msg.parse()
-            self.current_message = dbus_message.DbusMessage(line)
+            self.current_message = DbusMessage(line)
             return complete_msg

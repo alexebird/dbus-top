@@ -3,3 +3,5 @@ Todo:
 - write parser for dbus messages
 	- think 536
 - write wiki page for project
+
+- write cursesUI code, need separate thread possibly for UI.  use MVC.
