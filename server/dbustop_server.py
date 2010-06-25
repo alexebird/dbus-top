@@ -1,49 +1,34 @@
 import socket
 import threading
-from threading import Thread
 from client_registrar import ClientRegistrar
 from common import util
+from common.evented_thread import EventedThread
 
-class DbustopServer(Thread):
+class DbustopServer(EventedThread):
     def __init__(self, port):
-        Thread.__init__(self)
-        self.name = 'DbustopServer Thread'
+        EventedThread.__init__(self, 'DbustopServer Thread')
         self.host = ''  # Symbolic name meaning all available interfaces
         self.port = port
-        self.should_run_lock = threading.Lock()
-        self.backlog = 5
         self.client_registrar = ClientRegistrar()
-        self.should_run = True
         self.listening = False
-        self.running = False
         print 'dbustop-server listening on %d' % self.port
 
     def listen(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind((self.host, self.port))
-        self.socket.listen(self.backlog)
+        backlog = 5
+        self.socket.listen(backlog)
         self.socket.setblocking(0)  # Set to non-blocking mode
         self.listening = True
 
-    def run(self):
+    def do_run(self):
         if not self.listening: return
-        self.running = True
         while self.should_run == True:
             if util.ready_for_read(self.socket):
                 conn, addr = self.socket.accept()
                 self.client_registrar.register_client(conn, addr)
-        self.running = False
         self.client_registrar.close_all()
 
-    def stop(self):
-        if self.running:
-            print 'stopping server'
-            self.set_should_run_synced(False)
-
-    def set_should_run_synced(self, newval):
-        self.should_run_lock.acquire()
-        self.should_run = False
-        self.should_run_lock.release()
 
     def send_to_clients(self, msg):
         self.client_registrar.send_to_clients(msg.serialize())

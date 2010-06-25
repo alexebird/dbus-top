@@ -10,11 +10,12 @@ from client.curses_ui_thread import CursesUIThread
 def main():
     global controller
     options, args = handle_args()
-    signal.signal(signal.SIGINT, sigint_handler)
+    #signal.signal(signal.SIGINT, sigint_handler)
 
     controller = DbusClientController()
     net_thread = NetworkThread(options.host, options.port)
     ui_thread = CursesUIThread()
+    ui_thread.message_q = controller.message_q
     # Give the controller referneces to it's threads.
     controller.ui_thread = ui_thread
     controller.network_thread = net_thread
@@ -44,7 +45,7 @@ def handle_args():
 
 def sigint_handler(signum, frame):
     global controller
-    controller.stop()
+    controller.shutdown_application()
 
 if __name__ == "__main__":
     status = 0

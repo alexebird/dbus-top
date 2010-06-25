@@ -1,17 +1,19 @@
 class DbusClientController:
     def __init__(self):
-        self.ui_thread = None
-        self.network_thread = None
+        self.message_q = []
 
     def dbus_message_received(self, message):
-        self.ui_thread.print_str('message')
-        #print message
+        self.message_q.append(message)
+        #if len(self.message_q) > 25:
+            #self.message_q.pop(0)
+        self.ui_thread.refresh()
 
     def key_pressed(self, character):
-        self.ui_thread.print_str(character)
+        #self.ui_thread.print_str(character)
         if character == 'q':
-            self.ui_thread.refresh()
-            self.network_thread.stop()
-            self.network_thread.shutdown_event.set()
-            self.ui_thread.stop()
-            self.ui_thread.shutdown_event.set()
+            #self.ui_thread.refresh()
+            self.shutdown_application()
+
+    def shutdown_application(self):
+        self.network_thread.stop()
+        self.ui_thread.stop()

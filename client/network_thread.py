@@ -1,7 +1,7 @@
 import socket
 import select
 import pickle
-from evented_thread import EventedThread
+from common.evented_thread import EventedThread
 from common import util
 
 class NetworkThread(EventedThread):

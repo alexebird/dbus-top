@@ -17,7 +17,7 @@ class DbusMonitorMonitor:
                 line = self.read_dbm_line()
                 msg = lh.handle_line(line)
                 if msg:
-                    msg.print_msg()
+                    print msg.to_string()
                     self.__send_msg_to_server(msg)
             except IOError as ioe:
                 pass

@@ -17,10 +17,11 @@ class EventedThread(Thread):
         self.running = False
 
     def stop(self):
-        #if self.running:
-        self.should_run_lock.acquire()
-        self.should_run = False
-        self.should_run_lock.release()
+        if self.running:
+            self.should_run_lock.acquire()
+            self.should_run = False
+            self.should_run_lock.release()
+            self.shutdown_event.set()
 
     #
     # General purpose event mechanism methods

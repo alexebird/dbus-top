@@ -10,11 +10,25 @@ class DbusMessage:
     def add_line(self, line):
         self.raw_lines.append(line)
 
-    def print_msg(self):
-        print 'dbus-message: %s...' % self.raw_lines[0][0:40]
+    def to_string(self):
+        h = self.header
+        keys = ['message_type', 'sender', 'dest', 'member']
+
+        try:
+            s_val = '(%4s) | ' % h['serial']
+        except KeyError:
+            s_val = '(%4s) | ' % ' '
+
+        for k in keys:
+            try:
+                v = h[k]
+            except KeyError:
+                v = ''
+            s_val += '%s=%-12s | ' % (k, v[0:12])
+        return s_val.strip()
 
     def serialize(self):
-        return pickle.dumps(self.header)
+        return pickle.dumps(self)
 
     def parse(self):
         header_line = self.raw_lines[0]
@@ -43,7 +57,8 @@ class DbusMessage:
                 curr_header_entry = t
                 key, value = curr_header_entry.split('=', 1)
                 header_entries[key.strip()] = value.strip()
-        self.body = body
         self.header = header_entries
+        self.raw_lines = None
+        #self.body = body
         #for k,v in nonterms.iteritems():
             #print '%-15s => %s' % (k, v)
