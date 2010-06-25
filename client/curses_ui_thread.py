@@ -32,7 +32,3 @@ class CursesUIThread(EventedThread):
             self.stdscr.addstr(i, 0, lines[i].to_string())
         self.stdscr.move(rows-1, 0)
         self.stdscr.refresh()
-
-    def print_str(self, c):
-        self.stdscr.addstr(c)
-        self.refresh()

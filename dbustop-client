@@ -10,27 +10,35 @@ from client.curses_ui_thread import CursesUIThread
 def main():
     global controller
     options, args = handle_args()
-    #signal.signal(signal.SIGINT, sigint_handler)
+    signal.signal(signal.SIGINT, sigint_handler)
 
     controller = DbusClientController()
     net_thread = NetworkThread(options.host, options.port)
-    ui_thread = CursesUIThread()
-    ui_thread.message_q = controller.message_q
+    #ui_thread = CursesUIThread()
+    #ui_thread.message_q = controller.message_q
+
     # Give the controller referneces to it's threads.
-    controller.ui_thread = ui_thread
+    #controller.ui_thread = ui_thread
     controller.network_thread = net_thread
+
     # Register callbacks for network and UI events.
     net_thread.add_message_received_callback(controller.dbus_message_received)
-    ui_thread.add_key_pressed_callback(controller.key_pressed)
+    #ui_thread.add_key_pressed_callback(controller.key_pressed)
+
     # Start threads and wait for them to finish.
     net_thread.start()
-    ui_thread.start()
+    #ui_thread.start()
+
+    # Use loops below so that interrupts can be handled.
+    # Calling wait() with no time out blocks, and blocks interrupts from coming in.
     # Wait for network thread to finish
-    net_thread.shutdown_event.wait()
+    while net_thread.running:
+        net_thread.shutdown_event.wait(0.1)
     net_thread.join()
     # Wait for UI thread to finish
-    ui_thread.shutdown_event.wait()
-    ui_thread.join()
+    #while ui_thread.running:
+        #ui_thread.shutdown_event.wait(0.1)
+    #ui_thread.join()
 
 def handle_args():
     parser = OptionParser()
