@@ -2,22 +2,30 @@
 
 import sys, signal
 from optparse import OptionParser
-from client.dbustop_client import DbustopClient
-from client.curses_ui import CursesUI
+from client.dbus_client_controller import DbusClientController
+from client.network_thread import NetworkThread
+from client.curses_ui_thread import CursesUIThread
 
 def main():
-    global dbusclient
+    global controller
     options, args = handle_args()
     signal.signal(signal.SIGINT, sigint_handler)
-    dbusclient = DbustopClient(options.host, options.port)
-    curses_ui = CursesUI()
-    dbusclient.set_view(curses_ui)
-    curses_ui.start()
-    dbusclient.start()
-    while dbusclient.isAlive() and curses_ui.isAlive():
-        dbusclient.join(1)
-    dbusclient.stop()
-    curses_ui.stop()
+
+    controller = DbusClientController()
+    net_thread = NetworkThread(options.host, options.port)
+    ui_thread = CursesUIThread()
+    # Give the controller referneces to it's threads.
+    controller.ui_thread = ui_thread
+    controller.network_thread= ui_thread
+    # Register callbacks for network and UI events.
+    net_thread.add_message_received_callback(controller.dbus_message_received)
+    ui_thread.add_key_pressed_callback(controller.key_pressed)
+    # Start threads and wait for them to finish.
+    net_thread.start()
+    ui_thread.start()
+    #while net_thread.isAlive():
+        #net_thread.join(1)
+    #ui_thread.join()
 
 def handle_args():
     parser = OptionParser()
@@ -31,8 +39,8 @@ def handle_args():
     return parser.parse_args()
 
 def sigint_handler(signum, frame):
-    global dbusclient
-    dbusclient.stop()
+    global controller
+    controller.stop()
 
 if __name__ == "__main__":
     status = 0

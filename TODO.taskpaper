@@ -5,3 +5,9 @@ Todo:
 - write wiki page for project
 
 - write cursesUI code, need separate thread possibly for UI.  use MVC.
+
+
+How to setup threads so that the UI thread and network thread
+fire events to the contoller (in the main thread)?  im trying
+to model the way java does threads.  possibly use python
+Event or CVs.

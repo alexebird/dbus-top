@@ -5,14 +5,15 @@ import threading
 from threading import Thread
 from common.dbus_message import DbusMessage
 
-class DbustopClient(Thread):
+class NetworkThread(Thread):
     def __init__(self, host, port):
         Thread.__init__(self)
-        self.name = 'DbustopClient Thread'
+        self.name = 'NetworkThread'
         self.should_run_lock = threading.Lock()
         self.connection_args = (host, port)
         self.should_run = True
         self.running = False
+        self.callbacks = {}
 
     def run(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -34,16 +35,16 @@ class DbustopClient(Thread):
                 if len(data) > 0:
                     try:
                         msg = pickle.loads(data)
+                        self.__fire_event('message_received', msg)
                     except IndexError:
                         pass
-                    #print msg
-                    self.view.refresh()
         self.running = False
         #print 'sending close'
         self.socket.send('CLOSE')
         self.socket.close()
 
     def stop(self):
+        print 'NetworkThread stopped',
         if self.running:
             #print 'stopping client'
             self.set_should_run_synced(False)
@@ -53,5 +54,20 @@ class DbustopClient(Thread):
         self.should_run = False
         self.should_run_lock.release()
 
-    def set_view(self, view):
-        self.view = view
+    def add_message_received_callback(self, method):
+        self.__add_callback('message_received', method)
+
+    #
+    # General purpose event mechanism methods
+    #
+
+    def __add_callback(self, callback_name, method):
+        try:
+            self.callbacks[callback_name]
+        except KeyError:
+            self.callbacks[callback_name] = []
+        self.callbacks[callback_name].append(method)
+
+    def __fire_event(self, event_name, data):
+        for m in self.callbacks[event_name]:
+            m(data)
