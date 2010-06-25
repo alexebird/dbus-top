@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
-import sys, signal
+import sys
+import signal
 from optparse import OptionParser
 from client.dbus_client_controller import DbusClientController
 from client.network_thread import NetworkThread
@@ -16,16 +17,19 @@ def main():
     ui_thread = CursesUIThread()
     # Give the controller referneces to it's threads.
     controller.ui_thread = ui_thread
-    controller.network_thread= ui_thread
+    controller.network_thread = net_thread
     # Register callbacks for network and UI events.
     net_thread.add_message_received_callback(controller.dbus_message_received)
     ui_thread.add_key_pressed_callback(controller.key_pressed)
     # Start threads and wait for them to finish.
     net_thread.start()
     ui_thread.start()
-    #while net_thread.isAlive():
-        #net_thread.join(1)
-    #ui_thread.join()
+    # Wait for network thread to finish
+    net_thread.shutdown_event.wait()
+    net_thread.join()
+    # Wait for UI thread to finish
+    ui_thread.shutdown_event.wait()
+    ui_thread.join()
 
 def handle_args():
     parser = OptionParser()
