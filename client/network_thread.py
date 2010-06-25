@@ -2,6 +2,7 @@ import socket
 import select
 import pickle
 from evented_thread import EventedThread
+from common import util
 
 class NetworkThread(EventedThread):
     def __init__(self, host, port):
@@ -18,8 +19,7 @@ class NetworkThread(EventedThread):
             self.socket.close()
             return
         while self.should_run == True:
-            rv = select.select([self.socket], [], [], 0.1)
-            if len(rv[0]) > 0:
+            if util.ready_for_read(self.socket):
                 data = self.socket.recv(4096 * 100)
                 #if data == 'registered':
                     #print 'registered with %s:%d' % \
@@ -29,6 +29,7 @@ class NetworkThread(EventedThread):
                         msg = pickle.loads(data)
                         self.fire_event('message_received', msg)
                     except IndexError:
+                        # Occurs when Pickle can't parse the message.
                         pass
         #print 'sending close'
         self.socket.send('CLOSE')

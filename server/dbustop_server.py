@@ -1,8 +1,8 @@
 import socket
-import select
 import threading
 from threading import Thread
 from client_registrar import ClientRegistrar
+from common import util
 
 class DbustopServer(Thread):
     def __init__(self, port):
@@ -29,8 +29,7 @@ class DbustopServer(Thread):
         if not self.listening: return
         self.running = True
         while self.should_run == True:
-            rv = select.select([self.socket], [], [], 0.2)
-            if len(rv[0]) > 0:
+            if util.ready_for_read(self.socket):
                 conn, addr = self.socket.accept()
                 self.client_registrar.register_client(conn, addr)
         self.running = False
