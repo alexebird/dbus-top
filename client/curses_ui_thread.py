@@ -23,12 +23,10 @@ class CursesUIThread(EventedThread):
     def refresh(self):
         rows = self.stdscr.getmaxyx()[0]
         num_msgs = len(self.message_q)
-        if -rows < -num_msgs:
-            first_row_index = -num_msgs
-        else:
-            first_row_index = -rows
-        lines = self.message_q[first_row_index:-1]
-        for i in range(len(lines)):
-            self.stdscr.addstr(i, 0, lines[i].to_string())
+        for i in range(rows-1):
+            index = num_msgs - i - 1
+            if index < 0:
+                continue
+            self.stdscr.addstr(max(0, min(num_msgs, rows) - i - 2), 0, self.message_q[index].to_string())
         self.stdscr.move(rows-1, 0)
         self.stdscr.refresh()

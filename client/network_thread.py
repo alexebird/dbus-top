@@ -34,8 +34,8 @@ class NetworkThread(EventedThread):
                             self.fire_event('message_received', msg)
                         except IndexError:
                             # Occurs when Pickle can't parse the message.
-                            print 'pickle: oops'
-                            #pass
+                            #print 'pickle: oops'
+                            pass
         self.socket.send('CLOSE')
         self.socket.close()
 
