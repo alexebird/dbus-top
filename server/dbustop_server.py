@@ -1,5 +1,4 @@
 import socket
-import threading
 from client_registrar import ClientRegistrar
 from common import util
 from common.evented_thread import EventedThread
@@ -31,7 +30,7 @@ class DbustopServer(EventedThread):
 
 
     def send_to_clients(self, msg):
-        self.client_registrar.send_to_clients(msg.serialize())
+        self.client_registrar.send_to_clients(msg.packetize())
 
     def is_running(self):
         return self.running

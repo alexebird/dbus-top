@@ -1,8 +1,11 @@
 import shlex
+import struct
 import re
 import pickle
 
 class DbusMessage:
+    packet_length_format = '!i'
+
     def __init__(self, first_line):
         self.raw_lines = []
         self.add_line(first_line)
@@ -27,8 +30,15 @@ class DbusMessage:
             s_val += '%s=%-12s | ' % (k, v[0:12])
         return s_val.strip()
 
-    def serialize(self):
-        return pickle.dumps(self)
+    #
+    # Serialize the DbusMessage to be sent over a network stream using pickle, but
+    # prepend the length of the pickle dump.  Returns the length as an int byte string
+    # form plus the pickle dump string itself.
+    #
+    def packetize(self):
+        data = pickle.dumps(self)
+        length_bytes = struct.pack(DbusMessage.packet_length_format, len(data))
+        return length_bytes + data
 
     def parse(self):
         header_line = self.raw_lines[0]
@@ -62,3 +72,8 @@ class DbusMessage:
         #self.body = body
         #for k,v in nonterms.iteritems():
             #print '%-15s => %s' % (k, v)
+
+def unpack_packet_length(length_in_bytes):
+    # unpack() always returns a tuple.
+    return struct.unpack(DbusMessage.packet_length_format, length_in_bytes)[0]
+        
