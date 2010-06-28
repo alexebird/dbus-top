@@ -48,7 +48,6 @@ class DbusMessage:
         arrow_re = re.compile('->')
         curr_header_entry = ''
         header_entries = {}
-        #import pdb; pdb.set_trace()
         for t in tokens:
             # Skip the '->' in the header
             if arrow_re.match(t):

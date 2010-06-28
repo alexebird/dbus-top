@@ -30,14 +30,11 @@ def main():
     ui_thread.start()
 
     # Use loops below so that interrupts can be handled.
-    # Calling wait() with no time out blocks, and blocks interrupts from coming in.
     # Wait for network thread to finish
-    while net_thread.running:
-        net_thread.shutdown_event.wait(0.1)
+    net_thread.shutdown_event.wait(0.1)
     net_thread.join()
     # Wait for UI thread to finish
-    while ui_thread.running:
-        ui_thread.shutdown_event.wait(0.1)
+    ui_thread.shutdown_event.wait(0.1)
     ui_thread.join()
 
 def handle_args():
