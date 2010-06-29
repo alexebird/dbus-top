@@ -5,29 +5,26 @@ import signal
 import struct
 import select
 from optparse import OptionParser
-from client.dbus_client_controller import DbusClientController
-from client.client_connection import ClientConnection
+#from client.dbus_client_controller import DbusClientController
+from client.network_thread import NetworkThread
 from common import dbus_message
 
 def main():
+    # The 'self-pipe trick' (google it)
+    # Give make the write end global so signal handlers can write to it.
     global sig_w
     sig_r, sig_w = os.pipe()
-    # Give make the write end global so signal handlers can write to it.
-    #global controller
     options, args = handle_args()
-    signal.signal(signal.SIGINT, sigint_handler)
+    for s in [signal.SIGINT, signal.SIGTERM]:
+        signal.signal(s, signal_handler)
 
     #controller = DbusClientController()
-    client_conn = ClientConnection(options.host, options.port)
-    read_fds = [client_conn.socket, sig_r]
-    write_fds = []
-    exc_fds = []
+    #client_conn = ClientConnection(options.host, options.port)
+    #read_fds = [client_conn.socket, sig_r]
+    #write_fds = []
+    #exc_fds = []
 
-    # Register callbacks for network and UI events.
-    #net_thread.add_message_received_callback(controller.dbus_message_received)
-    #ui_thread.add_key_pressed_callback(controller.key_pressed)
-    
-    # Event loop
+    # The Event-loop
     while True:
         try:
             ready_fds = select.select(read_fds, write_fds, exc_fds)
@@ -43,8 +40,9 @@ def main():
         if sig_r in ready_fds[0]:
             signum = struct.unpack('b', os.read(sig_r, 1))[0]
             print signum
+            break
 
-def sigint_handler(signum, frame):
+def signal_handler(signum, frame):
     global sig_w
     os.write(sig_w, struct.pack('b', signum))
 

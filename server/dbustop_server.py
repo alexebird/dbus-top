@@ -1,11 +1,11 @@
 import socket
 from client_registrar import ClientRegistrar
 from common import util
-from common.evented_thread import EventedThread
+from common.base_thread import BaseThread
 
-class DbustopServer(EventedThread):
+class DbustopServer(BaseThread):
     def __init__(self, port):
-        EventedThread.__init__(self, 'DbustopServer Thread')
+        BaseThread.__init__(self, 'DbustopServer Thread')
         self.host = ''  # Symbolic name meaning all available interfaces
         self.port = port
         self.client_registrar = ClientRegistrar()

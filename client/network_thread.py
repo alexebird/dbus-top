@@ -1,13 +1,13 @@
 import select
 import pickle
 import struct
-from common.evented_thread import EventedThread
+from common.base_thread import BaseThread
 from common import util
 from common import dbus_message
 
-class NetworkThread(EventedThread):
+class NetworkThread(BaseThread):
     def __init__(self, host, port):
-        EventedThread.__init__(self, 'NetworkThread')
+        BaseThread.__init__(self, 'NetworkThread')
         self.host = host
         self.port = port
 
@@ -22,26 +22,9 @@ class NetworkThread(EventedThread):
             return None
         return dbustop_sock
 
-
-    def do_run(self):
+    def run(self):
         self.socket = create_dbustop_socket(self.host, self.port)
         if not self.socket: return
-        while self.should_run == True:
+        while not self.shutdown_event.is_set():
             if util.ready_for_read(self.socket):
-                dmessage_length = self.read_packet_length()
-                if util.ready_for_read(self.socket):
-                    data = self.socket.recv(dmessage_length)
-                    #if data == 'registered':
-                        #print 'registered with %s:%d' % \
-                            #(self.connection_args[0], self.connection_args[1])
-                    if len(data) > 0:
-                        try:
-                            msg = pickle.loads(data)
-                            self.fire_event('message_received', msg)
-                        except IndexError:
-                            # Occurs when Pickle can't parse the message.
-                            #print 'pickle: oops'
-                            pass
-
-    def add_message_received_callback(self, method):
-        self.add_callback('message_received', method)
+                msg = dbus_message.depacketize(self.socket)
