@@ -1,5 +1,5 @@
 test:
-	python test/test_dbus_message.py
+	PYTHONPATH=. python tests/test_dbus_message.py
 
 killdbm:
 	killall dbus-monitor

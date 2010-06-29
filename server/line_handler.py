@@ -5,7 +5,7 @@ class LineHandler:
     def __init__(self):
         self.current_message = None
 
-    ##
+    #
     # Lines printed by dbus-monitor that start with no spaces are the header
     # line of a message.  Lines that start with 3 spaces are part of the 
     # body of a message.  During parsing, when a header line is detected

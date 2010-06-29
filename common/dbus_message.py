@@ -19,12 +19,10 @@ class DbusMessage:
     def to_string(self):
         h = self.header
         keys = ['message_type', 'sender', 'dest', 'member']
-
         try:
             s_val = '(%4s) | ' % h['serial']
         except KeyError:
             s_val = '(%4s) | ' % ' '
-
         for k in keys:
             try:
                 v = h[k]
@@ -62,8 +60,6 @@ class DbusMessage:
         self.header = header_entries
         self.raw_lines = None
         #self.body = body
-        #for k,v in nonterms.iteritems():
-            #print '%-15s => %s' % (k, v)
 
     #
     # Serialize the DbusMessage to be sent over a network stream using pickle, but
@@ -83,7 +79,6 @@ def depacketize(sock):
     # unpack() returns a tuple even if only one item is unpacked, thus the [0].
     pkt_size = struct.unpack(packet_header_format, pkt_size_str)[0]
     serialized_dbus_msg = sock.recv(pkt_size)
-    #if len(data) > 0:
     try:
         msg = pickle.loads(serialized_dbus_msg)
         return msg

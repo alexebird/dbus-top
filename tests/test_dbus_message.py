@@ -2,7 +2,6 @@ import unittest
 from common.dbus_message import DbusMessage
 
 class TestDbusMessage(unittest.TestCase):
-
     def test_parse_with_null_destination(self):
         header_line = 'signal sender=org.freedesktop.DBus -> dest=(null destination) serial=8 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=NameOwnerChanged'
         body_lines = ['   string ":1.1738"',

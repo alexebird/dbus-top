@@ -21,8 +21,8 @@ class ClientRegistrar:
     def send_to_clients(self, data):
         for c in self.clients:
             conn, addr = c[0], c[1]
-            rv = select.select([conn], [conn], [], 0)
-            if len(rv[0]) > 0:
+            ready_fds = select.select([conn], [conn], [])
+            if conn in ready_fds[0]:
                 cmd = conn.recv(4096)
                 #if cmd == 'CLOSE':
                     #print 'CLOSE received from ', addr
@@ -30,7 +30,7 @@ class ClientRegistrar:
                     #print 'unknown command: "%s"' % cmd
                 conn.close()
                 self.remove_client(conn)
-            if len(rv[1]) > 0:
+            if conn in ready_fds[1]:
                 #print 'sending to:', addr, '(%d bytes)' % len(data)
                 conn.send(data)
 
