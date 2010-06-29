@@ -6,8 +6,8 @@ class ClientRegistrar:
         self.clients = []
         
     def register_client(self, conn, addr):
-        conn.setblocking(0)
-        conn.send('registered')
+        conn.setblocking(0)  # set to non-blocking mode
+        #conn.send('registered')
         self.clients.append((conn, addr))
         #print 'registered client:', addr
 

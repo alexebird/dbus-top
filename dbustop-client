@@ -1,41 +1,52 @@
 #!/usr/bin/python
 
-import sys
+import sys, os
 import signal
+import struct
+import select
 from optparse import OptionParser
 from client.dbus_client_controller import DbusClientController
-from client.network_thread import NetworkThread
-from client.curses_ui_thread import CursesUIThread
+from client.client_connection import ClientConnection
+from common import dbus_message
 
 def main():
-    global controller
+    global sig_w
+    sig_r, sig_w = os.pipe()
+    # Give make the write end global so signal handlers can write to it.
+    #global controller
     options, args = handle_args()
     signal.signal(signal.SIGINT, sigint_handler)
 
-    controller = DbusClientController()
-    net_thread = NetworkThread(options.host, options.port)
-    ui_thread = CursesUIThread()
-    ui_thread.message_q = controller.message_q
-
-    # Give the controller referneces to it's threads.
-    controller.ui_thread = ui_thread
-    controller.network_thread = net_thread
+    #controller = DbusClientController()
+    client_conn = ClientConnection(options.host, options.port)
+    read_fds = [client_conn.socket, sig_r]
+    write_fds = []
+    exc_fds = []
 
     # Register callbacks for network and UI events.
-    net_thread.add_message_received_callback(controller.dbus_message_received)
-    ui_thread.add_key_pressed_callback(controller.key_pressed)
+    #net_thread.add_message_received_callback(controller.dbus_message_received)
+    #ui_thread.add_key_pressed_callback(controller.key_pressed)
+    
+    # Event loop
+    while True:
+        try:
+            ready_fds = select.select(read_fds, write_fds, exc_fds)
+        except select.error as e:
+            if e[0] == 4:  # 'Interrpted system call' error
+                continue
+            else:
+                raise e
+        if client_conn.socket in ready_fds[0]:
+            msg = dbus_message.depacketize(client_conn.socket)
+            if msg:
+                print msg.to_string()
+        if sig_r in ready_fds[0]:
+            signum = struct.unpack('b', os.read(sig_r, 1))[0]
+            print signum
 
-    # Start threads and wait for them to finish.
-    net_thread.start()
-    ui_thread.start()
-
-    # Use loops below so that interrupts can be handled.
-    # Wait for network thread to finish
-    net_thread.shutdown_event.wait(0.1)
-    net_thread.join()
-    # Wait for UI thread to finish
-    ui_thread.shutdown_event.wait(0.1)
-    ui_thread.join()
+def sigint_handler(signum, frame):
+    global sig_w
+    os.write(sig_w, struct.pack('b', signum))
 
 def handle_args():
     parser = OptionParser()
@@ -47,10 +58,6 @@ def handle_args():
             action='store', type='int', dest='port',
             help='The port to use.')
     return parser.parse_args()
-
-def sigint_handler(signum, frame):
-    global controller
-    controller.shutdown_application()
 
 if __name__ == "__main__":
     status = 0

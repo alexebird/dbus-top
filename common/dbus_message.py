@@ -3,9 +3,12 @@ import struct
 import re
 import pickle
 
-class DbusMessage:
-    packet_length_format = '!i'
+# Packet header format:
+#   * int in network byte-order (big-endian)
+packet_header_format = '!i'
+packet_header_size = 4  # bytes
 
+class DbusMessage:
     def __init__(self, first_line):
         self.raw_lines = []
         self.add_line(first_line)
@@ -29,16 +32,6 @@ class DbusMessage:
                 v = ''
             s_val += '%s=%-12s | ' % (k, v[0:12])
         return s_val.strip()
-
-    #
-    # Serialize the DbusMessage to be sent over a network stream using pickle, but
-    # prepend the length of the pickle dump.  Returns the length as an int byte string
-    # form plus the pickle dump string itself.
-    #
-    def packetize(self):
-        data = pickle.dumps(self)
-        length_bytes = struct.pack(DbusMessage.packet_length_format, len(data))
-        return length_bytes + data
 
     def parse(self):
         header_line = self.raw_lines[0]
@@ -72,7 +65,30 @@ class DbusMessage:
         #for k,v in nonterms.iteritems():
             #print '%-15s => %s' % (k, v)
 
-def unpack_packet_length(length_in_bytes):
-    # unpack() always returns a tuple.
-    return struct.unpack(DbusMessage.packet_length_format, length_in_bytes)[0]
-        
+    #
+    # Serialize the DbusMessage to be sent over a network stream using pickle, but
+    # prepend the length of the pickle dump.  Returns the length as an int byte string
+    # form plus the pickle dump string itself.
+    #
+    def packetize(self):
+        data = pickle.dumps(self)
+        length_bytes = struct.pack(packet_header_format, len(data))
+        return length_bytes + data
+
+#
+# Reads and serializes a python DbusMessage object from the specified socket.
+#
+def depacketize(sock):
+    pkt_size_str = sock.recv(packet_header_size)
+    # unpack() returns a tuple even if only one item is unpacked, thus the [0].
+    pkt_size = struct.unpack(packet_header_format, pkt_size_str)[0]
+    serialized_dbus_msg = sock.recv(pkt_size)
+    #if len(data) > 0:
+    try:
+        msg = pickle.loads(serialized_dbus_msg)
+        return msg
+    except IndexError:
+        # Occurs when Pickle can't parse the message.
+        #print 'pickle: oops'
+        pass
+    return None
