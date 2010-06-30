@@ -3,10 +3,12 @@
 import sys, os, signal
 import Queue
 from optparse import OptionParser
-from common import util
-from client.event import Event
-from client.network_thread import NetworkThread
-from client.curses_ui_thread import CursesUIThread
+
+sys.path.insert(0, '.')
+from dbustop.common import util
+from dbustop.common.event.event import Event
+from dbustop.client.network_thread import NetworkThread
+from dbustop.client.curses_ui_thread import CursesUIThread
 
 def main():
     options, args = handle_args()

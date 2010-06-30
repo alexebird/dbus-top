@@ -2,10 +2,10 @@ import select
 import socket
 import pickle
 import struct
-from common.base_thread import BaseThread
-from common import util
-from common import dbus_message
-from client.event import Event
+from dbustop.common.base_thread import BaseThread
+from dbustop.common import util
+from dbustop.common import dbus_message
+from dbustop.common.event.event import Event
 
 def create_dbustop_socket(host, port):
     dbustop_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

@@ -2,8 +2,10 @@
 
 import sys, os, signal
 from optparse import OptionParser
-from server.dbus_monitor_monitor import DbusMonitorMonitor
-from server.dbustop_server import DbustopServer
+
+sys.path.insert(0, '.')
+from dbustop.server.dbus_monitor_monitor import DbusMonitorMonitor
+from dbustop.server.dbustop_server import DbustopServer
 
 def main():
     global dbusmonitor

@@ -1,9 +1,9 @@
 import os
 import curses
 import time
-from common import util
-from common.base_thread import BaseThread
-from client.event import Event
+from dbustop.common import util
+from dbustop.common.base_thread import BaseThread
+from dbustop.common.event.event import Event
 
 class CursesUIThread(BaseThread):
     def __init__(self):

@@ -1,5 +1,7 @@
-import unittest
-from common.dbus_message import DbusMessage
+import unittest, sys
+
+sys.path.insert(0, '.')
+from dbustop.common.dbus_message import DbusMessage
 
 class TestDbusMessage(unittest.TestCase):
     def test_parse_with_null_destination(self):

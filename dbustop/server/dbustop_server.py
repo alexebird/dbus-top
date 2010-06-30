@@ -1,7 +1,7 @@
 import socket
 from client_registrar import ClientRegistrar
-from common import util
-from common.base_thread import BaseThread
+from dbustop.common import util
+from dbustop.common.base_thread import BaseThread
 
 class DbustopServer(BaseThread):
     def __init__(self, port):
