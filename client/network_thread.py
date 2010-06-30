@@ -30,5 +30,5 @@ class NetworkThread(BaseThread):
         while not self.shutdown_event.is_set():
             if util.ready_for_read(self.socket):
                 msg = dbus_message.depacketize(self.socket)
-                util.global_msg_queue.put(Event(self.name, msg))
+                util.global_msg_queue.put(Event(self.name, 'dbusmessage_received', msg))
         self.socket.close()

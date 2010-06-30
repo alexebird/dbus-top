@@ -6,6 +6,7 @@ from optparse import OptionParser
 from common import util
 from client.event import Event
 from client.network_thread import NetworkThread
+from client.curses_ui_thread import CursesUIThread
 
 def main():
     options, args = handle_args()
@@ -15,20 +16,29 @@ def main():
     net_thread = NetworkThread(options.host, options.port)
     net_thread.start()
 
+    ui_thread = CursesUIThread()
+    ui_thread.start()
+
     # The Event-loop
     while True:
         try:
             event = util.global_msg_queue.get(True, 0.1)
             if event.origin == 'NetworkThread':
-                print event.data.to_string()
-            elif event.origin == 'signal_handler':
-                net_thread.shutdown()
-                break
+                #print event.data.to_string()
+                ui_thread.data_model.append(event.data)
+                ui_thread.refresh()
+            elif event.origin == 'CursesUIThread':
+                if event.data == 'q': break
+            elif event.origin == 'signal_handler': break
         except Queue.Empty:
             pass
 
+    # Close things down
+    net_thread.shutdown()
+    ui_thread.shutdown()
+
 def signal_handler(signum, frame):
-    util.global_msg_queue.put(Event("signal_handler", signum))
+    util.global_msg_queue.put(Event('signal_handler', 'signal_interrupt_received', signum))
 
 def handle_args():
     parser = OptionParser()

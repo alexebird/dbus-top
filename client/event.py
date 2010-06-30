@@ -1,7 +1,8 @@
 import time
 
 class Event:
-    def __init__(self, origin, data):
+    def __init__(self, origin, type, data):
         self.timestamp = time.time()
-        self.data = data
         self.origin = origin
+        self.type = type
+        self.data = data

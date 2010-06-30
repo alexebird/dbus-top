@@ -1,32 +1,37 @@
 import os
 import curses
-from common.evented_thread import EventedThread
+import time
+from common import util
+from common.base_thread import BaseThread
+from client.event import Event
 
-class CursesUIThread(EventedThread):
+class CursesUIThread(BaseThread):
     def __init__(self):
-        EventedThread.__init__(self, 'CursesUIThread')
-        self.message_q = None
+        BaseThread.__init__(self, 'CursesUIThread')
+        self.data_model = []
 
-    def do_run(self):
-        curses.wrapper(self.__do_run)
+    def run(self):
+        curses.wrapper(self.__run)
 
-    def __do_run(self, stdscr):
+    def __run(self, stdscr):
         self.stdscr = stdscr
+        self.stdscr.nodelay(1)
         self.refresh()
-        while self.should_run:
-            c = self.stdscr.getkey()
-            self.fire_event('key_pressed', c)
-
-    def add_key_pressed_callback(self, method):
-        self.add_callback('key_pressed', method)
+        while not self.shutdown_event.is_set():
+            try:
+                c = self.stdscr.getkey()
+                util.global_msg_queue.put(Event(self.name, 'key_pressed', c))
+            except curses.error:
+                pass
+            time.sleep(0.1)
 
     def refresh(self):
         rows = self.stdscr.getmaxyx()[0]
-        num_msgs = len(self.message_q)
+        num_msgs = len(self.data_model)
         for i in range(rows-1):
             index = num_msgs - i - 1
             if index < 0:
                 continue
-            self.stdscr.addstr(max(0, min(num_msgs, rows) - i - 2), 0, self.message_q[index].to_string())
+            self.stdscr.addstr(max(0, min(num_msgs, rows) - i - 2), 0, self.data_model[index].to_string())
         self.stdscr.move(rows-1, 0)
         self.stdscr.refresh()
