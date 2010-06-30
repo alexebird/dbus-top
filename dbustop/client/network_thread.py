@@ -6,6 +6,8 @@ from dbustop.common.base_thread import BaseThread
 from dbustop.common import util
 from dbustop.common import dbus_message
 from dbustop.common.event.event import Event
+#from dbustop.common.event.event_handler import EventHandler
+from dbustop.common.event import event_handler
 
 def create_dbustop_socket(host, port):
     dbustop_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -30,5 +32,5 @@ class NetworkThread(BaseThread):
         while not self.shutdown_event.is_set():
             if util.ready_for_read(self.socket):
                 msg = dbus_message.depacketize(self.socket)
-                util.global_msg_queue.put(Event(self.name, 'dbusmessage_received', msg))
+                event_handler.add_event(Event(self.name, 'dbusmessage_received', msg))
         self.socket.close()

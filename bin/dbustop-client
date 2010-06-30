@@ -1,12 +1,12 @@
 #!/usr/bin/python
 
 import sys, os, signal
-import Queue
 from optparse import OptionParser
 
 sys.path.insert(0, '.')
 from dbustop.common import util
 from dbustop.common.event.event import Event
+from dbustop.common.event import event_handler
 from dbustop.client.network_thread import NetworkThread
 from dbustop.client.curses_ui_thread import CursesUIThread
 
@@ -23,24 +23,21 @@ def main():
 
     # The Event-loop
     while True:
-        try:
-            event = util.global_msg_queue.get(True, 0.1)
-            if event.origin == 'NetworkThread':
-                #print event.data.to_string()
-                ui_thread.data_model.append(event.data)
-                ui_thread.refresh()
-            elif event.origin == 'CursesUIThread':
-                if event.data == 'q': break
-            elif event.origin == 'signal_handler': break
-        except Queue.Empty:
-            pass
+        event = event_handler.next_event()
+        if not event: continue
+        if event.origin == 'NetworkThread':
+            ui_thread.data_model.append(event.data)
+            ui_thread.refresh()
+        elif event.origin == 'CursesUIThread':
+            if event.data == 'q': break
+        elif event.origin == 'signal_handler': break
 
     # Close things down
     net_thread.shutdown()
     ui_thread.shutdown()
 
 def signal_handler(signum, frame):
-    util.global_msg_queue.put(Event('signal_handler', 'signal_interrupt_received', signum))
+    event_handler.add_event(Event('signal_handler', 'signal_received', signum))
 
 def handle_args():
     parser = OptionParser()

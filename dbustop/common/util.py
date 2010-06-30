@@ -1,7 +1,4 @@
 import select
-import Queue
-
-global_msg_queue = Queue.Queue()
 
 #
 # Returns whether the specified socket is ready to be read from.

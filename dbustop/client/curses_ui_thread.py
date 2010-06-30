@@ -4,6 +4,7 @@ import time
 from dbustop.common import util
 from dbustop.common.base_thread import BaseThread
 from dbustop.common.event.event import Event
+from dbustop.common.event import event_handler
 
 class CursesUIThread(BaseThread):
     def __init__(self):
@@ -20,7 +21,7 @@ class CursesUIThread(BaseThread):
         while not self.shutdown_event.is_set():
             try:
                 c = self.stdscr.getkey()
-                util.global_msg_queue.put(Event(self.name, 'key_pressed', c))
+                event_handler.add_event(Event(self.name, 'key_pressed', c))
             except curses.error:
                 pass
             time.sleep(0.1)
