@@ -1,0 +1,15 @@
+Wed Jun 30 16:59:29 PDT 2010
+
+Started this blog.  Going to be writing about the design and implementation of
+dbustop (now aka chrometop).  Trevor has recommended that I write to keep track
+of how ideas about the project change over time -- great idea!
+
+After developing dbustop for approximately three weeks, I got to a point today
+where I thought it would be good to get some direction on where to go next.  So
+far, I have written two python executables: dbustop-server and dbustop-client.
+On a high level, dbustop-server monitors the dbus and forwards dbus messages
+over the network to clients.  dbustop-client connects to a dbustop-server
+instance and gets dbus messages, doing what it wants with them.
+
+dbustop-client provides an event-based foundation for passing dbus messages
+from a network thread connected to a dbustop-server instance to a GUI thread.

@@ -1,0 +1,6 @@
+On a high level, dbustop-server monitors the dbus and forwards dbus messages
+over the network to clients.  dbustop-client connects to a dbustop-server
+instance and gets dbus messages, doing what it wants with them.
+
+dbustop-client provides an event-based foundation for passing dbus messages
+from a network thread connected to a dbustop-server instance to a GUI thread.
