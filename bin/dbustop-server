@@ -11,6 +11,10 @@ def main():
     options, args = handle_args()
     signal.signal(signal.SIGINT, sigint_handler)
 
+    monitor = DbusMonitorMonitor()
+    monitor.start()
+    monitor.join()
+
 def handle_args():
     parser = OptionParser()
     parser.set_defaults(port=5006)

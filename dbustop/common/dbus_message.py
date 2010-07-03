@@ -9,12 +9,9 @@ packet_header_format = '!i'
 packet_header_size = 4  # bytes
 
 class DbusMessage:
-    def __init__(self, first_line):
-        self.raw_lines = []
-        self.add_line(first_line)
-
-    def add_line(self, line):
-        self.raw_lines.append(line)
+    def __init__(self, header_line):
+        self.header_line = header_line
+        self.parse()
 
     def __str__(self):
         h = self.header
@@ -32,9 +29,7 @@ class DbusMessage:
         return s_val.strip()
 
     def parse(self):
-        header_line = self.raw_lines[0]
-        body = '\n'.join(self.raw_lines[1:-1])
-        tokens = shlex.split(header_line)
+        tokens = shlex.split(self.header_line)
         key_value_re = re.compile('\S+=[^=\s]+')
         arrow_re = re.compile('->')
         curr_header_entry = ''
@@ -58,8 +53,6 @@ class DbusMessage:
                 key, value = curr_header_entry.split('=', 1)
                 header_entries[key.strip()] = value.strip()
         self.header = header_entries
-        self.raw_lines = None
-        #self.body = body
 
     #
     # Serialize the DbusMessage to be sent over a network stream using pickle, but
