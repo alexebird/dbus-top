@@ -16,7 +16,7 @@ class DbusMessage:
     def add_line(self, line):
         self.raw_lines.append(line)
 
-    def to_string(self):
+    def __str__(self):
         h = self.header
         keys = ['message_type', 'sender', 'dest', 'member']
         try:

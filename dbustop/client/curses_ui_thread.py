@@ -33,6 +33,6 @@ class CursesUIThread(BaseThread):
             index = num_msgs - i - 1
             if index < 0:
                 continue
-            self.stdscr.addstr(max(0, min(num_msgs, rows) - i - 2), 0, self.data_model[index].to_string())
+            self.stdscr.addstr(max(0, min(num_msgs, rows) - i - 2), 0, self.data_model[index])
         self.stdscr.move(rows-1, 0)
         self.stdscr.refresh()
