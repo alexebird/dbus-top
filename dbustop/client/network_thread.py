@@ -29,7 +29,7 @@ class NetworkThread(BaseThread):
     def run(self):
         self.socket = create_dbustop_socket(self.host, self.port)
         if not self.socket: return
-        while not self.shutdown_event.is_set():
+        while self.should_run():
             if util.ready_for_read(self.socket):
                 msg = dbus_message.depacketize(self.socket)
                 event_handler.add_event(Event(self.name, 'dbusmessage_received', msg))

@@ -18,7 +18,7 @@ class CursesUIThread(BaseThread):
         self.stdscr = stdscr
         self.stdscr.nodelay(1)
         self.refresh()
-        while not self.shutdown_event.is_set():
+        while self.should_run():
             try:
                 c = self.stdscr.getkey()
                 event_handler.add_event(Event(self.name, 'key_pressed', c))

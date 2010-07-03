@@ -8,22 +8,8 @@ from dbustop.server.dbus_monitor_monitor import DbusMonitorMonitor
 from dbustop.server.dbustop_server import DbustopServer
 
 def main():
-    global dbusmonitor
     options, args = handle_args()
     signal.signal(signal.SIGINT, sigint_handler)
-    fd_r, fd_w = os.pipe()
-
-    if os.fork() == 0:
-        # Child process: exec dbus-monitor and pipe output to parent
-        os.dup2(fd_w, sys.stdout.fileno())
-        child_name = '/usr/bin/dbus-monitor'
-        os.execl(child_name, child_name, '--session')
-    else:
-        # Parent process: Read from the dbus-monitor pipe and parse dbus messages.
-        dbusmonitor = DbusMonitorMonitor(fd_r)
-        db_server = DbustopServer(options.port)
-        dbusmonitor.set_server(db_server)
-        dbusmonitor.run()
 
 def handle_args():
     parser = OptionParser()
@@ -34,7 +20,6 @@ def handle_args():
     return parser.parse_args()
 
 def sigint_handler(signum, frame):
-    global dbusmonitor
     dbusmonitor.stop()
 
 if __name__ == "__main__":

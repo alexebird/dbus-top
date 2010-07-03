@@ -1,33 +1,28 @@
-import os, socket, errno
-from line_handler import LineHandler
+import os
 
-class DbusMonitorMonitor:
-    def __init__(self, dbusmonitor_fd):
-        self.dbm_file = os.fdopen(dbusmonitor_fd)
-        self.should_run = True
+from dbustop.common.base_thread import BaseThread
 
-    def set_server(self, server):
-        self.db_server = server
+class DbusMonitorMonitor(BaseThread):
+    def __init__(self):
+		BaseThread.__init__(self, 'DbusMonitorMonitor_thread')
 
     def run(self):
-        lh = LineHandler()
-        if not self.db_server.listen(): return
-        self.db_server.start()
-        while self.should_run:
-            try:
-                line = self.read_dbm_line()
-                msg = lh.handle_line(line)
-                if msg:
-                    print msg
-                    self.db_server.send_to_clients(msg)
-            except IOError as ioe:
-                #pass  # Don't care about missing dbus-monitor output.
-                print 'IOError occured while reading from dbus-monitor'
-        self.db_server.shutdown()
-        print 'Ending dbus-monitor monitoring.'
+		fd_r, fd_w = os.pipe()
 
-    def read_dbm_line(self):
-        return self.dbm_file.readline().rstrip()
+		if os.fork() == 0:
+			# Child process: exec dbus-monitor and pipe output to parent
+			os.close(fd_r)
+			os.dup2(fd_w, sys.stdout.fileno())
+			child_name = '/usr/bin/dbus-monitor'
+			os.execl(child_name, child_name, '--session')
+		else:
+			# Parent process: Read from the dbus-monitor pipe and parse dbus messages.
+			os.close(fd_w)
+			dbm_file = os.fdopen(fd_r)
 
-    def stop(self):
-        self.should_run = False
+        while self.should_run():
+			line = dbm_file.readline().rstrip()
+			# Make sure the line doesn't start with spaces
+			if re.match('^\S.*', line):
+				msg = DbusMessage(line)
+				# TODO add event to event queue

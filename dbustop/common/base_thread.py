@@ -7,6 +7,9 @@ class BaseThread(Thread):
         self.name = name
         self.shutdown_event = threading.Event()
 
+	def should_run(self):
+		return not self.shutdown_event.is_set()
+
     #
     # Shutdown the thread.  Must call shutdown() from another thread.
     #
