@@ -1,9 +1,12 @@
 import os
 import sys
 import re
+import select
 
 from dbustop.common.base_thread import BaseThread
 from dbustop.common.dbus_message import DbusMessage
+from dbustop.common.event import event_loop
+from dbustop.common.event.event import Event
 
 class DbusMonitorMonitor(BaseThread):
     def __init__(self):
@@ -23,10 +26,15 @@ class DbusMonitorMonitor(BaseThread):
             os.close(fd_w)
             dbm_file = os.fdopen(fd_r)
 
-        while self.should_run():
-            line = dbm_file.readline().rstrip()
-            # Make sure the line doesn't start with spaces
-            if re.match('^\S.*', line):
-                msg = DbusMessage(line)
-                print msg
-                # TODO add event to event queue
+        while True:
+            ready_fds = select.select([fd_r, event_loop.loop.child_thread_control_socket], [], [])
+            if fd_r in ready_fds[0]:
+                line = dbm_file.readline().rstrip()
+                # Make sure the line doesn't start with spaces
+                if re.match('^\S.*', line):
+                    msg = DbusMessage(line)
+                    print msg
+                    event_loop.loop.add_event(Event(self.name, 'dbus-message-received', msg))
+            if event_loop.loop.child_thread_control_socket in ready_fds[0]:
+                print 'exiting', self.name
+                break

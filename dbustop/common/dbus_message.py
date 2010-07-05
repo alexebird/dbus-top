@@ -13,6 +13,10 @@ class DbusMessage:
         self.header_line = header_line
         self.parse()
 
+    def __repr__(self):
+        h = self.header
+        return '<DbusMessage: msg-type=%s, sender=%s, dest=%s, member=%s>' % (h['message_type'], h['sender'], h['dest'], h['member'])
+
     def __str__(self):
         h = self.header
         keys = ['message_type', 'sender', 'dest', 'member']

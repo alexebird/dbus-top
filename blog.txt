@@ -1,8 +1,36 @@
+Sun Jul  4 14:12:16 PDT 2010
+dbustop Server Process Architecture
+
+I'm trying to figure out how to architect the threads of the server today.  The
+goal is to not have any timeouts on select() calls.  Currently, the event loop
+is waiting on a blocking call to event_queue.get() as it's 'next_event()' type
+function.
+
+Instead, I think it would be better to have a main loop where select() is the 
+event function that blocks. That way, different types of events other than 
+Queue updates could cause the main loop to run.
+
+In order to do this, I think I a good starting point would be to use unix
+sockets for IPC and create a wrapper around Queue get() and put() that update
+sockets that child threads are listening on.  When the event queue has an event
+added to it, a byte will be written to the 'event socket' and the event loop's
+select() call will unblock.  The event loop will be the only thread listening
+on the read end of that socket.
+
+Child threads' main loops will also block on select() calls.  In addition to
+whatever I/O the main loop of a child thread is doing, the select() call will
+also include a socket in it's read group that gets updated by the main thread.
+The main thread will write bytes to child thread control sockets to notify them
+of thread control activities.
+
+================================================================================
+
 Wed Jun 30 16:59:29 PDT 2010
+Introduction
 
 Started this blog.  Going to be writing about the design and implementation of
 dbustop (now aka chrometop).  Trevor has recommended that I write to keep track
-of how ideas about the project change over time -- great idea!
+of how ideas about the project changes over time -- great idea!
 
 After developing dbustop for approximately three weeks, I got to a point today
 where I thought it would be good to get some direction on where to go next.  So

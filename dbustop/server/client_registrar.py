@@ -9,13 +9,13 @@ class ClientRegistrar:
         conn.setblocking(0)  # set to non-blocking mode
         #conn.send('registered')
         self.clients.append((conn, addr))
-        #print 'registered client:', addr
+        print 'registered client:', addr
 
     def remove_client(self, conn):
         for c in self.clients:
             if conn == c[0]:
                 self.clients.remove(c)
-                #print 'removed client:', c[1]
+                print 'removed client:', c[1]
                 break
 
     def send_to_clients(self, data):
@@ -24,15 +24,19 @@ class ClientRegistrar:
             ready_fds = select.select([conn], [conn], [])
             if conn in ready_fds[0]:
                 cmd = conn.recv(4096)
-                #if cmd == 'CLOSE':
-                    #print 'CLOSE received from ', addr
-                #else:
-                    #print 'unknown command: "%s"' % cmd
+                if cmd == 'CLOSE':
+                    print 'CLOSE received from ', addr
+                else:
+                    print 'unknown command: "%s"' % cmd
                 conn.close()
                 self.remove_client(conn)
             if conn in ready_fds[1]:
-                #print 'sending to:', addr, '(%d bytes)' % len(data)
-                conn.send(data)
+                print 'sending to:', addr, '(%d bytes)' % len(data)
+                try:
+                    conn.send(data)
+                except socket.error:
+                    conn.close()
+                    self.remove_client(conn)
 
     def close_all(self):
         for c in self.clients:

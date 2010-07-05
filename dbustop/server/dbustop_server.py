@@ -1,14 +1,20 @@
 import socket
+import select
+import errno
+
 from client_registrar import ClientRegistrar
-from dbustop.common import util
 from dbustop.common.base_thread import BaseThread
+from dbustop.common.event import event_loop
 
 class DbustopServer(BaseThread):
     def __init__(self, port):
-        BaseThread.__init__(self, 'DbustopServerThread')
+        BaseThread.__init__(self, 'DbustopServer_thread')
         self.host = ''  # Symbolic name meaning all available interfaces
         self.port = port
         self.client_registrar = ClientRegistrar()
+        def dbus_message_received_handler(event):
+            self.client_registrar.send_to_clients(event.data.packetize())
+        event_loop.loop.register_event_callback('DbusMonitorMonitor_thread', 'dbus-message-received', dbus_message_received_handler)
         print 'dbustop-server listening on %d' % self.port
 
     def listen(self):
@@ -25,10 +31,14 @@ class DbustopServer(BaseThread):
         return True
 
     def run(self):
-        while not self.shutdown_event.is_set():
-            if util.ready_for_read(self.socket):
+        while True:
+            ready_fds = select.select([self.socket, event_loop.loop.child_thread_control_socket], [], [])
+            if self.socket in ready_fds[0]:
                 conn, addr = self.socket.accept()
                 self.client_registrar.register_client(conn, addr)
+            if event_loop.loop.child_thread_control_socket in ready_fds[0]:
+                print 'exiting', self.name
+                break
         self.client_registrar.close_all()
         self.socket.close()
 
