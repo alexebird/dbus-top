@@ -1,3 +1,7 @@
+chrometop/dbustop
+
+-> A dbus monitoring and visualization tool.
+
 On a high level, dbustop-server monitors the dbus and forwards dbus messages
 over the network to clients.  dbustop-client connects to a dbustop-server
 instance and gets dbus messages, doing what it wants with them.
