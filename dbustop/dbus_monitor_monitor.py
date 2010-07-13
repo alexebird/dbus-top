@@ -1,16 +1,16 @@
+print 'IMPORTING:', __name__
 import os
 import sys
 import re
 import select
 
-from dbustop.common.base_thread import BaseThread
-from dbustop.common.dbus_message import DbusMessage
-from dbustop.common.event import event_loop
-from dbustop.common.event.event import Event
+import base_thread
+import event
+import dbus_message
 
-class DbusMonitorMonitor(BaseThread):
+class DbusMonitorMonitor(base_thread.BaseThread):
     def __init__(self):
-        BaseThread.__init__(self, 'DbusMonitorMonitor_thread')
+        base_thread.BaseThread.__init__(self, 'DbusMonitorMonitor_thread')
 
     def run(self):
         fd_r, fd_w = os.pipe()
@@ -27,14 +27,14 @@ class DbusMonitorMonitor(BaseThread):
             dbm_file = os.fdopen(fd_r)
 
         while True:
-            ready_fds = select.select([fd_r, event_loop.loop.child_thread_control_socket], [], [])
+            ready_fds = select.select([fd_r, event.mainloop.child_thread_control_socket], [], [])
             if fd_r in ready_fds[0]:
                 line = dbm_file.readline().rstrip()
                 # Make sure the line doesn't start with spaces
                 if re.match('^\S.*', line):
-                    msg = DbusMessage(line)
+                    msg = dbus_message.DbusMessage(line)
                     print msg
-                    event_loop.loop.add_event(Event(self.name, 'dbus-message-received', msg))
-            if event_loop.loop.child_thread_control_socket in ready_fds[0]:
+                    event.mainloop.add_event(event.Event(self.name, 'dbus-message-received', msg))
+            if event.mainloop.child_thread_control_socket in ready_fds[0]:
                 print 'exiting', self.name
                 break

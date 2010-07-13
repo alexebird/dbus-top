@@ -1,3 +1,4 @@
+print 'IMPORTING:', __name__
 import shlex
 import struct
 import re
@@ -5,8 +6,8 @@ import pickle
 
 # Packet header format:
 #   * int in network byte-order (big-endian)
-packet_header_format = '!i'
-packet_header_size = 4  # bytes
+PACKET_HEADER_FORMAT = '!i'
+PACKET_HEADER_SIZE = 4  # bytes
 
 class DbusMessage:
     def __init__(self, header_line):
@@ -65,16 +66,16 @@ class DbusMessage:
     #
     def packetize(self):
         data = pickle.dumps(self)
-        length_bytes = struct.pack(packet_header_format, len(data))
+        length_bytes = struct.pack(PACKET_HEADER_FORMAT, len(data))
         return length_bytes + data
 
 #
 # Reads and serializes a python DbusMessage object from the specified socket.
 #
 def depacketize(sock):
-    pkt_size_str = sock.recv(packet_header_size)
+    pkt_size_str = sock.recv(PACKET_HEADER_SIZE)
     # unpack() returns a tuple even if only one item is unpacked, thus the [0].
-    pkt_size = struct.unpack(packet_header_format, pkt_size_str)[0]
+    pkt_size = struct.unpack(PACKET_HEADER_FORMAT, pkt_size_str)[0]
     serialized_dbus_msg = sock.recv(pkt_size)
     try:
         msg = pickle.loads(serialized_dbus_msg)
