@@ -1,4 +1,3 @@
-print 'IMPORTING:', __name__
 import os
 import sys
 import re

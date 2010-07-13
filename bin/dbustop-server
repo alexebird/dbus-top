@@ -10,24 +10,21 @@ from optparse import OptionParser
 sys.path.insert(0, '.')
 
 import dbustop
-import dbustop.event
-import dbustop.server
-import dbustop.dbus_monitor_monitor
 
 def main():
     global sig_fd_r
     init_signal_handling()
     options, args = handle_args()
-    dbustop.event.mainloop.start()
-    monitor = dbustop.dbus_monitor_monitor.DbusMonitorMonitor()
-    server = dbustop.server.DbustopServer(options.port)
+    dbustop.mainloop.start()
+    monitor = dbustop.DbusMonitorMonitor()
+    server = dbustop.DbustopServer(options.port)
     if server.listen():
         server.start()
         monitor.start()
         run_main_loop()
     else:
-        dbustop.event.mainloop.add_event(Event('abnormal-shutdown', 'shutdown', 'DbusServer listen failed.'))
-        dbustop.event.mainloop.join()
+        dbustop.mainloop.add_event(Event('abnormal-shutdown', 'shutdown', 'DbusServer listen failed.'))
+        dbustop.mainloop.join()
         return 1
     return 0
 
@@ -52,16 +49,16 @@ def run_main_loop():
     ready_fds = None
     while True:
         try:
-            ready_fds = select.select([sig_fd_r, dbustop.event.mainloop.child_thread_control_socket], [], [])
+            ready_fds = select.select([sig_fd_r, dbustop.mainloop.child_thread_control_socket], [], [])
         except select.error as e:
             if e[0] == 4:  # errno 4 is 'Interrupted system call'
                 continue   # Occurs when a signal comes in while select() is blocking
-        if dbustop.event.mainloop.child_thread_control_socket in ready_fds[0]:
+        if dbustop.mainloop.child_thread_control_socket in ready_fds[0]:
             print 'exiting signal handler thread'
             break
         if sig_fd_r in ready_fds[0]:
             signum = struct.unpack('i', os.read(sig_fd_r, 4))[0]
-            dbustop.event.mainloop.add_event(dbustop.event.Event('signal_handler', 'shutdown', signum))
+            dbustop.mainloop.add_event(dbustop.event.Event('signal_handler', 'shutdown', signum))
 
 if __name__ == "__main__":
     status = 0

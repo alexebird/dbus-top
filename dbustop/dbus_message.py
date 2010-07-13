@@ -1,4 +1,3 @@
-print 'IMPORTING:', __name__
 import shlex
 import struct
 import re

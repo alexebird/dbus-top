@@ -1,4 +1,3 @@
-print 'IMPORTING:', __name__
 import time
 import select
 import socket

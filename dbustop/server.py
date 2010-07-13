@@ -1,4 +1,3 @@
-print 'IMPORTING:', __name__
 import socket
 import select
 import errno
@@ -82,7 +81,6 @@ class DbustopServer(base_thread.BaseThread):
                 break
         self.client_registrar.close_all()
         self.socket.close()
-
 
     def send_to_clients(self, msg):
         self.client_registrar.send_to_clients(msg.packetize())

@@ -1,7 +1,6 @@
-print 'IMPORTING:', __name__
-import threading
+from threading import Thread
 
-class BaseThread(threading.Thread):
+class BaseThread(Thread):
     def __init__(self, name):
-        threading.Thread.__init__(self)
+        Thread.__init__(self)
         self.name = name
