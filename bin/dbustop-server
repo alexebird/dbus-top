@@ -39,7 +39,7 @@ def sigint_handler(signum, frame):
 
 def handle_args():
     parser = OptionParser()
-    parser.set_defaults(port=5006)
+    parser.set_defaults(port=8080)
     parser.add_option('-p', '--port',
             action='store', type='int', dest='port',
             help='The port for dbustop to listen on.')
