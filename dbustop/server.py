@@ -4,6 +4,7 @@ import errno
 
 import base_thread
 import event
+import httpserver
 
 class ClientRegistrar:
     def __init__(self):
@@ -74,8 +75,10 @@ class DbustopServer(base_thread.BaseThread):
         while True:
             ready_fds = select.select([self.socket, event.mainloop.child_thread_control_socket], [], [])
             if self.socket in ready_fds[0]:
-                conn, addr = self.socket.accept()
-                self.client_registrar.register_client(conn, addr)
+                request, client_addr = self.socket.accept()
+                #self.client_registrar.register_client(conn, addr)
+                httpserver.DbusHTTPRequestHandler(request, client_addr, None)
+                request.close()
             if event.mainloop.child_thread_control_socket in ready_fds[0]:
                 print 'exiting', self.name
                 break
