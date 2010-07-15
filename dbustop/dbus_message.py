@@ -1,7 +1,69 @@
 import shlex
-import struct
 import re
-import pickle
+
+def parse(message_str):
+    if message_str.startswith('sig'):
+        return __parse_signal(message_str)
+    elif message_str.startswith('mc'):
+        return __parse_method_call(message_str)
+    elif message_str.startswith('mr'):
+        return __parse_method_return(message_str)
+    elif message_str.startswith('err'):
+        return __parse_error(message_str)
+
+def __tokenize_message(message_str):
+    return shlex.split(message_str)
+
+def __timestamp_in_sec(sec, usec):
+    USEC_IN_SEC = 1000000
+    return sec + (usec / USEC_IN_SEC)
+
+def __parse_signal(message_str):
+    tokens = __tokenize_message(message_str)
+    type = tokens[0]
+    sec = float(tokens[1])
+    usec = float(tokens[2])
+    msg = SignalMessage(type, __timestamp_in_sec(sec, usec), message_str)
+    msg.serial = int(tokens[3])
+    msg.object = tokens[4]
+    msg.interface = tokens[5]
+    msg.member = tokens[6]
+    return msg
+
+def __parse_method_call(message_str):
+    tokens = __tokenize_message(message_str)
+    type = tokens[0]
+    sec = float(tokens[1])
+    usec = float(tokens[2])
+    msg = MethodCallMessage(type, __timestamp_in_sec(sec, usec), message_str)
+    msg.serial = int(tokens[3])
+    msg.sender = tokens[4]
+    msg.object = tokens[5]
+    msg.interface = tokens[6]
+    msg.member = tokens[7]
+    return msg
+
+def __parse_method_return(message_str):
+    tokens = __tokenize_message(message_str)
+    type = tokens[0]
+    sec = float(tokens[1])
+    usec = float(tokens[2])
+    msg = MethodReturnMessage(type, __timestamp_in_sec(sec, usec), message_str)
+    msg.serial = int(tokens[3])
+    msg.reply_serial = int(tokens[4])
+    msg.destination = tokens[5]
+    return msg
+
+def __parse_error(message_str):
+    tokens = __tokenize_message(message_str)
+    type = tokens[0]
+    sec = float(tokens[1])
+    usec = float(tokens[2])
+    msg = ErrorMessage(type, __timestamp_in_sec(sec, usec), message_str)
+    msg.serial = int(tokens[3])
+    msg.reply_serial = int(tokens[4])
+    msg.destination = tokens[5]
+    return msg
 
 # Packet header format:
 #   * int in network byte-order (big-endian)
@@ -9,78 +71,26 @@ PACKET_HEADER_FORMAT = '!i'
 PACKET_HEADER_SIZE = 4  # bytes
 
 class DbusMessage:
-    def __init__(self, header_line):
-        self.header_line = header_line
-        self.parse()
+    def __init__(self, type, timestamp, original_text):
+        self.original_text = original_text
+        self.timestamp = timestamp
+        self.message_type = type
 
-    def __repr__(self):
-        h = self.header
-        return '<DbusMessage: msg-type=%s, sender=%s, dest=%s, member=%s>' % (h['message_type'], h['sender'], h['dest'], h['member'])
-
+class SignalMessage(DbusMessage):
     def __str__(self):
-        h = self.header
-        keys = ['message_type', 'sender', 'dest', 'member']
-        try:
-            s_val = '(%4s) | ' % h['serial']
-        except KeyError:
-            s_val = '(%4s) | ' % ' '
-        for k in keys:
-            try:
-                v = h[k]
-            except KeyError:
-                v = ''
-            s_val += '%s=%-12s | ' % (k, v[0:12])
-        return s_val.strip()
+        return '%s %f %d %s %s %s' % ('signal', self.timestamp, self.serial, self.object, self.interface, self.member)
 
-    def parse(self):
-        tokens = shlex.split(self.header_line)
-        key_value_re = re.compile('\S+=[^=\s]+')
-        arrow_re = re.compile('->')
-        curr_header_entry = ''
-        header_entries = {}
-        for t in tokens:
-            # Skip the '->' in the header
-            if arrow_re.match(t):
-                continue
-            # Text not matching the 'key=value' pattern
-            elif key_value_re.match(t) == None:
-                curr_header_entry += ' ' + t
-                i = tokens.index(t)
-                if (key_value_re.match(tokens[i + 1]) or i + 1 >= len(tokens)) and len(header_entries) == 0:
-                    header_entries['message_type'] = curr_header_entry.strip()
-                elif key_value_re.match(curr_header_entry):
-                    key, value = curr_header_entry.split('=', 1)
-                    header_entries[key.strip()] = value.strip()
-            # Text containing a '=' is appended to the previous key's value 
-            else:
-                curr_header_entry = t
-                key, value = curr_header_entry.split('=', 1)
-                header_entries[key.strip()] = value.strip()
-        self.header = header_entries
+    #def json_str(self):
 
-    #
-    # Serialize the DbusMessage to be sent over a network stream using pickle, but
-    # prepend the length of the pickle dump.  Returns the length as an int byte string
-    # form plus the pickle dump string itself.
-    #
-    def packetize(self):
-        data = pickle.dumps(self)
-        length_bytes = struct.pack(PACKET_HEADER_FORMAT, len(data))
-        return length_bytes + data
 
-#
-# Reads and serializes a python DbusMessage object from the specified socket.
-#
-def depacketize(sock):
-    pkt_size_str = sock.recv(PACKET_HEADER_SIZE)
-    # unpack() returns a tuple even if only one item is unpacked, thus the [0].
-    pkt_size = struct.unpack(PACKET_HEADER_FORMAT, pkt_size_str)[0]
-    serialized_dbus_msg = sock.recv(pkt_size)
-    try:
-        msg = pickle.loads(serialized_dbus_msg)
-        return msg
-    except IndexError:
-        # Occurs when Pickle can't parse the message.
-        #print 'pickle: oops'
-        pass
-    return None
+class MethodCallMessage(DbusMessage):
+    def __str__(self):
+        return '%s %f %d %s %s %s %s' % ('method_call', self.timestamp, self.serial, self.sender, self.object, self.interface, self.member)
+
+class MethodReturnMessage(DbusMessage):
+    def __str__(self):
+        return '%s %f %d %d %s' % ('method_return', self.timestamp, self.serial, self.reply_serial, self.destination)
+
+class ErrorMessage(DbusMessage):
+    def __str__(self):
+        return '%s %f %d %d %s' % ('error', self.timestamp, self.serial, self.reply_serial, self.destination)

@@ -19,7 +19,7 @@ class DbusMonitorMonitor(base_thread.BaseThread):
             os.close(fd_r)
             os.dup2(fd_w, sys.stdout.fileno())
             child_name = '/usr/bin/dbus-monitor'
-            os.execl(child_name, child_name, '--session')
+            os.execl(child_name, child_name, '--session', '--profile')
         else:
             # Parent process: Read from the dbus-monitor pipe and parse dbus messages.
             os.close(fd_w)
@@ -29,11 +29,9 @@ class DbusMonitorMonitor(base_thread.BaseThread):
             ready_fds = select.select([fd_r, event.mainloop.child_thread_control_socket], [], [])
             if fd_r in ready_fds[0]:
                 line = dbm_file.readline().rstrip()
-                # Make sure the line doesn't start with spaces
-                if re.match('^\S.*', line):
-                    msg = dbus_message.DbusMessage(line)
-                    print msg
-                    event.mainloop.add_event(event.Event(self.name, 'dbus-message-received', msg))
+                msg = dbus_message.parse(line)
+                print msg
+                event.mainloop.add_event(event.Event(self.name, 'dbus-message-received', msg))
             if event.mainloop.child_thread_control_socket in ready_fds[0]:
                 print 'exiting', self.name
                 break

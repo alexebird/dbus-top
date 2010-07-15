@@ -1,0 +1,9 @@
+task :default => :haml
+
+task :haml do
+  sh "haml -f html5 index.haml > index.html"
+end
+
+task :view do 
+  sh "google-chrome index.html"
+end

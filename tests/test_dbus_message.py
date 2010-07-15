@@ -1,49 +1,51 @@
 import unittest, sys
 
 sys.path.insert(0, '.')
-from dbustop.common.dbus_message import DbusMessage
+from dbustop import dbus_message
 
 class TestDbusMessage(unittest.TestCase):
-    def test_parse_with_null_destination(self):
-        header_line = 'signal sender=org.freedesktop.DBus -> dest=(null destination) serial=8 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=NameOwnerChanged'
-        body_lines = ['   string ":1.1738"',
-                      '   string ":1.1738"',
-                      '   string ""']
-        header = {'message_type': 'signal',
-                  'sender': 'org.freedesktop.DBus',
-                  'dest': '(null destination)',
-                  'serial': '8',
-                  'path': '/org/freedesktop/DBus;',
-                  'interface': 'org.freedesktop.DBus;',
-                  'member': 'NameOwnerChanged'}
-        body = '   string ":1.1738"\n   string ":1.1738"\n   string ""\n'
-        msg = DbusMessage(header_line)
-        for l in body:
-            msg.add_line(l)
-        msg.parse()
-        self.__compare_headers(header, msg.header)
+    def test_parse_signal(self):
+        message_str = 'sig\t1279224860\t619607\t7\t/org/freedesktop/DBus\torg.freedesktop.DBus\tNameOwnerChanged\n'
+        parsed_message = dbus_message.parse(message_str)
+        self.assertNotEqual(parsed_message, None)
+        self.assertEqual(parsed_message.message_type, 'sig')
+        self.assertEqual(parsed_message.timestamp, 1279224860 + (619607 / 1000000.0))
+        self.assertEqual(parsed_message.serial, 7)
+        self.assertEqual(parsed_message.object, '/org/freedesktop/DBus')
+        self.assertEqual(parsed_message.interface, 'org.freedesktop.DBus')
+        self.assertEqual(parsed_message.member, 'NameOwnerChanged')
+        
+    def test_parse_method_call(self):
+        message_str = 'mc\t1279224860\t619617\t2\t:1.12390\t/SomeObject\tcom.example.SampleInterface\tHelloWorld\n'
+        parsed_message = dbus_message.parse(message_str)
+        self.assertNotEqual(parsed_message, None)
+        self.assertEqual(parsed_message.message_type, 'mc')
+        self.assertEqual(parsed_message.timestamp, 1279224860 + (619617 / 1000000.0))
+        self.assertEqual(parsed_message.sender, ':1.12390')
+        self.assertEqual(parsed_message.serial, 2)
+        self.assertEqual(parsed_message.object, '/SomeObject')
+        self.assertEqual(parsed_message.interface, 'com.example.SampleInterface')
+        self.assertEqual(parsed_message.member, 'HelloWorld')
 
-    def test_parse_with_method_call(self):
-        header_line = 'method call sender=:1.1776 -> dest=org.freedesktop.DBus serial=2 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch'
-        body_lines = ['   string "type=\'signal\'"']
+    def test_parse_method_return(self):
+        message_str = 'mr\t1279224860\t619619\t44\t2\t:1.12390\n'
+        parsed_message = dbus_message.parse(message_str)
+        self.assertNotEqual(parsed_message, None)
+        self.assertEqual(parsed_message.message_type, 'mr')
+        self.assertEqual(parsed_message.timestamp, 1279224860 + (619619 / 1000000.0))
+        self.assertEqual(parsed_message.serial, 44)
+        self.assertEqual(parsed_message.reply_serial, 2)
+        self.assertEqual(parsed_message.destination, ':1.12390')
 
-        header = {'message_type': 'method call',
-                'sender': ':1.1776',
-                  'dest': 'org.freedesktop.DBus',
-                  'serial': '2',
-                  'path': '/org/freedesktop/DBus;',
-                  'interface': 'org.freedesktop.DBus;',
-                  'member': 'AddMatch'}
-        body = '   string "type=\'signal\'"'
-        msg = DbusMessage(header_line)
-        for l in body:
-            msg.add_line(l)
-        msg.parse()
-        self.__compare_headers(header, msg.header)
-
-    def __compare_headers(self, h1, h2):
-        for k,v in h1.items():
-            self.assertEqual(h1[k], h2[k])
+    def test_parse_error(self):
+        message_str = 'err\t1279225677\t616434\t105\t2\t:1.12454\n'
+        parsed_message = dbus_message.parse(message_str)
+        self.assertNotEqual(parsed_message, None)
+        self.assertEqual(parsed_message.message_type, 'err')
+        self.assertEqual(parsed_message.timestamp, 1279225677 + (616434 / 1000000.0))
+        self.assertEqual(parsed_message.serial, 105)
+        self.assertEqual(parsed_message.reply_serial, 2)
+        self.assertEqual(parsed_message.destination, ':1.12454')
 
 if __name__ == '__main__':
     unittest.main()

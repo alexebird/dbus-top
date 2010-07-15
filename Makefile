@@ -1,6 +1,3 @@
-test:
-	python tests/test_dbus_message.py
-
 killdbm:
 	killall dbus-monitor
 

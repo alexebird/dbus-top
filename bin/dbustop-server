@@ -17,13 +17,13 @@ def main():
     options, args = handle_args()
     dbustop.mainloop.start()
     monitor = dbustop.DbusMonitorMonitor()
-    server = dbustop.DbustopServer(options.port)
-    if server.listen():
+    server = dbustop.DbustopServer(options.host, options.port)
+    if server.bind_and_listen():
         server.start()
         monitor.start()
         run_main_loop()
     else:
-        dbustop.mainloop.add_event(Event('abnormal-shutdown', 'shutdown', 'DbusServer listen failed.'))
+        dbustop.mainloop.add_event(dbustop.event.Event('abnormal-shutdown', 'shutdown', 'DbusServer listen failed.'))
         dbustop.mainloop.join()
         return 1
     return 0
@@ -39,7 +39,10 @@ def sigint_handler(signum, frame):
 
 def handle_args():
     parser = OptionParser()
-    parser.set_defaults(port=8080)
+    parser.set_defaults(host='localhost', port=8080)
+    parser.add_option('-s', '--host',
+            action='store', type='string', dest='host',
+            help='The interface for dbustop to listen on.')
     parser.add_option('-p', '--port',
             action='store', type='int', dest='port',
             help='The port for dbustop to listen on.')
