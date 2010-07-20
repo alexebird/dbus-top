@@ -16,11 +16,13 @@ def main():
     init_signal_handling()
     options, args = handle_args()
     dbustop.mainloop.start()
-    monitor = dbustop.DbusMonitorMonitor()
+    sesh_monitor = dbustop.DbusMonitorMonitor('session_bus', '--session', '--profile')
+    sys_monitor = dbustop.DbusMonitorMonitor('system_bus', '--system', '--profile')
     server = dbustop.DbustopServer(options.host, options.port)
     if server.bind_and_listen():
         server.start()
-        monitor.start()
+        sesh_monitor.start()
+        sys_monitor.start()
         run_main_loop()
     else:
         dbustop.mainloop.add_event(dbustop.event.Event('abnormal-shutdown', 'shutdown', 'DbusServer listen failed.'))

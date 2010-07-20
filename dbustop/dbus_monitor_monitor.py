@@ -8,18 +8,19 @@ import event
 import dbus_message
 
 class DbusMonitorMonitor(base_thread.BaseThread):
-    def __init__(self):
-        base_thread.BaseThread.__init__(self, 'DbusMonitorMonitor_thread')
+    def __init__(self, description='default-bus', *dbus_monitor_args):
+        base_thread.BaseThread.__init__(self, 'DbusMonitorMonitor_thread[%s]' % description)
+        dbus_monitor_args = list(dbus_monitor_args)
+        dbus_monitor_args.insert(0, '/usr/bin/dbus-monitor')
+        self.dbus_monitor_args = dbus_monitor_args
 
     def run(self):
         fd_r, fd_w = os.pipe()
-
         if os.fork() == 0:
             # Child process: exec dbus-monitor and pipe output to parent
             os.close(fd_r)
             os.dup2(fd_w, sys.stdout.fileno())
-            child_name = '/usr/bin/dbus-monitor'
-            os.execl(child_name, child_name, '--session', '--profile')
+            os.execv(self.dbus_monitor_args[0], self.dbus_monitor_args)
         else:
             # Parent process: Read from the dbus-monitor pipe and parse dbus messages.
             os.close(fd_w)

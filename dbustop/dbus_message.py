@@ -75,22 +75,59 @@ class DbusMessage:
         self.original_text = original_text
         self.timestamp = timestamp
         self.message_type = type
+        self.dict = None
 
 class SignalMessage(DbusMessage):
     def __str__(self):
         return '%s %f %d %s %s %s' % ('signal', self.timestamp, self.serial, self.object, self.interface, self.member)
 
-    #def json_str(self):
-
+    def json_str(self):
+        if self.dict == None:
+            self.dict = { 'message_type': 'signal',
+                          'timestamp': self.timestamp,
+                          'serial': self.serial,
+                          'object': self.object,
+                          'interface': self.interface,
+                          'member': self.member }
+        return json.dumps(dict)
 
 class MethodCallMessage(DbusMessage):
     def __str__(self):
         return '%s %f %d %s %s %s %s' % ('method_call', self.timestamp, self.serial, self.sender, self.object, self.interface, self.member)
 
+    def json_str(self):
+        if self.dict == None:
+            self.dict = { 'message_type': 'method_call',
+                          'timestamp': self.timestamp,
+                          'serial': self.serial,
+                          'sender': self.sender,
+                          'object': self.object,
+                          'interface': self.interface,
+                          'member': self.member }
+        return json.dumps(dict)
+
 class MethodReturnMessage(DbusMessage):
     def __str__(self):
         return '%s %f %d %d %s' % ('method_return', self.timestamp, self.serial, self.reply_serial, self.destination)
 
+    def json_str(self):
+        if self.dict == None:
+            self.dict = { 'message_type': 'method_return',
+                          'timestamp': self.timestamp,
+                          'serial': self.serial,
+                          'reply_serial': self.reply_serial,
+                          'destination': self.destination }
+        return json.dumps(dict)
+
 class ErrorMessage(DbusMessage):
     def __str__(self):
         return '%s %f %d %d %s' % ('error', self.timestamp, self.serial, self.reply_serial, self.destination)
+
+    def json_str(self):
+        if self.dict == None:
+            self.dict = { 'message_type': 'error',
+                          'timestamp': self.timestamp,
+                          'serial': self.serial,
+                          'reply_serial': self.reply_serial,
+                          'destination': self.destination }
+        return json.dumps(dict)
