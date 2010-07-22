@@ -2,14 +2,17 @@ import shlex
 import re
 
 def parse(message_str):
-    if message_str.startswith('sig'):
-        return __parse_signal(message_str)
-    elif message_str.startswith('mc'):
-        return __parse_method_call(message_str)
-    elif message_str.startswith('mr'):
-        return __parse_method_return(message_str)
-    elif message_str.startswith('err'):
-        return __parse_error(message_str)
+    try:
+        if message_str.startswith('sig'):
+            return __parse_signal(message_str)
+        elif message_str.startswith('mc'):
+            return __parse_method_call(message_str)
+        elif message_str.startswith('mr'):
+            return __parse_method_return(message_str)
+        elif message_str.startswith('err'):
+            return __parse_error(message_str)
+    except IndexError:
+        return None
 
 def __tokenize_message(message_str):
     return shlex.split(message_str)

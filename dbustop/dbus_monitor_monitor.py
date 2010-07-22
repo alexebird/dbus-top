@@ -2,6 +2,7 @@ import os
 import sys
 import re
 import select
+import signal
 
 import base_thread
 import event
@@ -16,7 +17,8 @@ class DbusMonitorMonitor(base_thread.BaseThread):
 
     def run(self):
         fd_r, fd_w = os.pipe()
-        if os.fork() == 0:
+        child_pid = os.fork()
+        if child_pid == 0:
             # Child process: exec dbus-monitor and pipe output to parent
             os.close(fd_r)
             os.dup2(fd_w, sys.stdout.fileno())
@@ -25,14 +27,18 @@ class DbusMonitorMonitor(base_thread.BaseThread):
             # Parent process: Read from the dbus-monitor pipe and parse dbus messages.
             os.close(fd_w)
             dbm_file = os.fdopen(fd_r)
-
-        while True:
-            ready_fds = select.select([fd_r, event.mainloop.child_thread_control_socket], [], [])
-            if fd_r in ready_fds[0]:
-                line = dbm_file.readline().rstrip()
-                msg = dbus_message.parse(line)
-                print msg
-                event.mainloop.add_event(event.Event(self.name, 'dbus-message-received', msg))
-            if event.mainloop.child_thread_control_socket in ready_fds[0]:
-                print 'exiting', self.name
-                break
+            while True:
+                ready_fds = select.select([fd_r, event.mainloop.child_thread_control_socket], [], [])
+                if fd_r in ready_fds[0]:
+                    line = dbm_file.readline().rstrip()
+                    if line:
+                        msg = dbus_message.parse(line)
+                        print 'line:', line
+                        if msg:
+                            print 'message:', msg
+                            event.mainloop.add_event(event.Event(self.name, 'dbus-message-received', msg))
+                if event.mainloop.child_thread_control_socket in ready_fds[0]:
+                    print 'exiting', self.name
+                    break
+            os.kill(child_pid, signal.SIGINT)
+            os.wait()

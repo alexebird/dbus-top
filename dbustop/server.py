@@ -82,7 +82,6 @@ class DbustopServer(base_thread.BaseThread):
         #def dbus_message_received_handler(event):
             #self.client_registrar.send_to_clients(event.data.packetize())
         #event.mainloop.register_event_callback('DbusMonitorMonitor_thread', 'dbus-message-received', dbus_message_received_handler)
-        print 'dbustop-server listening on %d' % self.port
 
     def bind_and_listen(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -95,6 +94,7 @@ class DbustopServer(base_thread.BaseThread):
         backlog = 5
         self.socket.listen(backlog)
         self.socket.setblocking(0)  # Set to non-blocking mode
+        print 'dbustop-server listening on %d' % self.port
         return True
 
     def run(self):

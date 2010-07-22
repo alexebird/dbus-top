@@ -15,7 +15,6 @@ class Event:
     def __repr__(self):
         return '<Event: origin=%s, type=%s, data=%s>' % (self.origin, self.type, self.data.__class__)
 
-
 class EventLoop(base_thread.BaseThread):
     def __init__(self):
         base_thread.BaseThread.__init__(self, 'EventLoop_thread')
@@ -23,25 +22,35 @@ class EventLoop(base_thread.BaseThread):
         # Sockets used to signal child threads to shutdown.
         self.my_child_thread_ctrl_sock, self.child_thread_control_socket = socket.socketpair()
         self.event_callback_dict = {}
+        self.return_value = 0
+
+        self.__child_threads = []
+        self.should_run = True
+        def shutdown_handler(event):
+            self.my_child_thread_ctrl_sock.send('\0')
+            for t in self.__child_threads:
+                t.join()
+            self.should_run = False
+        self.register_event_callback(self.name, 'shutdown', shutdown_handler)
+
+        self.add_event(Event('main()', 'event-loop-ready', None))
 
     def run(self):
-        while True:
+        while self.should_run:
             ready_fds = select.select([self.event_queue.queue_updated_sock], [], [])
             # Something has been put into the event queue
             if self.event_queue.queue_updated_sock in ready_fds[0]:
                 self.event_queue.queue_updated_sock.recv(1)  # Clear the socket
                 event = self.event_queue.get()
-                if event.type == 'shutdown':
-                    self.my_child_thread_ctrl_sock.send('\0')
-                    break
-                else:
-                    key = (event.origin, event.type)
-                    try:
-                        callback_list = self.event_callback_dict[key]
-                        for c in callback_list:
-                            c(event)
-                    except KeyError:
-                        pass  # Don't care if the event doesn't have any registered callbacks.
+                try:
+                    callback_list = self.event_callback_dict[event.type]
+                    for c in callback_list:
+                        c(event)
+                except KeyError:
+                    pass  # Don't care if the event doesn't have any registered callbacks.
+
+    def register_child_thread(self, thread):
+        self.__child_threads.append(thread)
 
     def add_event(self, new_event):
         self.event_queue.put(new_event)
@@ -49,7 +58,7 @@ class EventLoop(base_thread.BaseThread):
     def register_event_callback(self, origin, type, callback):
         if origin == '':
             origin = None
-        key = (origin, type)
+        key = type
         callback_list = None
         try:
             callback_list = self.event_callback_dict[key]
