@@ -19,20 +19,22 @@ def main():
     sesh_monitor = dbustop.DbusMonitorMonitor('session_bus', '--session', '--profile')
     sys_monitor = dbustop.DbusMonitorMonitor('system_bus', '--system', '--profile')
     server = dbustop.DbustopServer(options.host, options.port)
-    dbustop.mainloop.register_child_thread(sesh_monitor)
 
     def start_dbus_monitors(event):
         sesh_monitor.start()
-        #sys_monitor.start()
+        sys_monitor.start()
 
     def start_server(event):
-        if server.bind_and_listen() and False:
+        if server.bind_and_listen():
             server.start()
         else:
             dbustop.mainloop.add_event(dbustop.event.Event('main()', 'shutdown', 'DbusServer listen failed.'))
 
+    dbustop.mainloop.register_child_thread(sesh_monitor)
+    dbustop.mainloop.register_child_thread(sys_monitor)
     dbustop.mainloop.register_event_callback('main()', 'event-loop-ready', start_dbus_monitors)
-    #dbustop.mainloop.register_event_callback('main()', 'event-loop-ready', start_server)
+    dbustop.mainloop.register_child_thread(server)
+    dbustop.mainloop.register_event_callback('main()', 'event-loop-ready', start_server)
     dbustop.mainloop.start()
     run_signal_handler_loop()
     dbustop.mainloop.join()

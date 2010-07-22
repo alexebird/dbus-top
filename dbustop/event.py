@@ -20,14 +20,14 @@ class EventLoop(base_thread.BaseThread):
         base_thread.BaseThread.__init__(self, 'EventLoop_thread')
         self.event_queue = EventQueue()
         # Sockets used to signal child threads to shutdown.
-        self.my_child_thread_ctrl_sock, self.child_thread_control_socket = socket.socketpair()
+        self.__my_child_thread_ctrl_sock, self.child_thread_control_socket = socket.socketpair()
         self.event_callback_dict = {}
         self.return_value = 0
 
         self.__child_threads = []
         self.should_run = True
         def shutdown_handler(event):
-            self.my_child_thread_ctrl_sock.send('\0')
+            self.__my_child_thread_ctrl_sock.send('\0')
             for t in self.__child_threads:
                 t.join()
             self.should_run = False

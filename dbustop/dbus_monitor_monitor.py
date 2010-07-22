@@ -40,5 +40,8 @@ class DbusMonitorMonitor(base_thread.BaseThread):
                 if event.mainloop.child_thread_control_socket in ready_fds[0]:
                     print 'exiting', self.name
                     break
-            os.kill(child_pid, signal.SIGINT)
-            os.wait()
+            try:
+                os.kill(child_pid, signal.SIGINT)
+                os.wait()
+            except OSError as e:
+                print 'Error when killing dbus-monitor process:', e
