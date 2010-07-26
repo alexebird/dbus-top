@@ -1,9 +1,18 @@
-task :default => :haml
+require 'rake/clean'
 
-task :haml do
-  sh "haml -f html5 index.haml > index.html"
+CLOBBER.include('*.html', 'screen.css')
+
+task :default => ['index.html', 'screen.css']
+
+rule '.html' => '.haml' do |t|
+  sh "haml -f html5 #{t.source} > #{t.name}"
 end
 
-task :view do 
+rule '.css' => '.sass' do |t|
+  sh "sass #{t.source} > css/#{t.name}"
+end
+
+desc 'View the web page in Google Chrome.'
+task :view => 'index.html' do 
   sh "google-chrome index.html"
 end

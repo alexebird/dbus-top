@@ -2,8 +2,26 @@
 <html>
   <head>
     <title>dbustop</title>
+    <link href='css/screen.css' rel='stylesheet' type='text/css'>
+    <script src='js/jquery-1.4.2.min.js' type='text/javascript'></script>
+    <script type='text/javascript'>
+      //<![CDATA[
+          $(document).ready(function() {
+               -#draw();
+          });
+      //]]>
+    </script>
   </head>
   <body>
-    hello world
+    <div id='container'>
+      <div id='contents'>
+        <div class='pane' id='leftPane'>
+          hi
+        </div>
+        <div class='pane' id='rightPane'>
+          hello
+        </div>
+      </div>
+    </div>
   </body>
 </html>

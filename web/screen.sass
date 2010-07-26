@@ -1,0 +1,44 @@
+@import reset.css
+
+html, body
+  margin: 0px
+  padding: 0px
+  height: 100%
+
+=tall
+  height: 100%
+  //min-height: 100%
+
+=bordered
+  border: black solid 1px
+
+#container
+  background-color: white
+  width: 100%
+  +tall
+
+#contents
+  background-color: gray
+  +tall
+
+!leftPaneWidth = 250px
+
+#leftPane
+  background-color: red
+  float: left
+  width= !leftPaneWidth
+  margin:
+    :left 0px
+    :right 0px
+    :top 0px
+    :bottom 0px
+  +tall
+
+#rightPane
+  background-color: green
+  margin:
+    :left= !leftPaneWidth + 0px
+    :right 0px
+    :top 0px
+    :bottom 0px
+  +tall

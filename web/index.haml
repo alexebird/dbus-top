@@ -2,12 +2,20 @@
 %html
   %head
     %title dbustop
-    %script{ :type => "text/javascript", :src => "jquery-1.4.2.min.js" }
-    %script{ :type => "text/javascript", :src => "dbustop.js" }
+    %link{ :rel => "stylesheet", :type => "text/css", :href=> "css/screen.css" }
+    %script{ :type => "text/javascript", :src => "js/jquery-1.4.2.min.js" }
+    -#%script{ :type => "text/javascript", :src => "js/processing-0.9.4.min.js" }
+    -#%script{ :type => "text/javascript", :src => "js/dbustop.js" }
     :javascript
         $(document).ready(function() {
-             // Your code here
+             -#draw();
         });
-
   %body
-    hello world
+    #container
+      #contents
+        #leftPane.pane
+          hi
+        #rightPane.pane
+          hello
+          -#%canvas#canvas
+            Canvas not supported
