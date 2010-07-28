@@ -29,7 +29,8 @@ class EventLoop(base_thread.BaseThread):
         def shutdown_handler(event):
             self.__my_child_thread_ctrl_sock.send('\0')
             for t in self.__child_threads:
-                t.join()
+                if t.is_alive():
+                    t.join()
             self.should_run = False
         self.register_event_callback(self.name, 'shutdown', shutdown_handler)
 

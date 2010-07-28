@@ -1,32 +1,46 @@
 @import url(reset.css);
 html, body {
-  margin: 0px;
-  padding: 0px;
   height: 100%; }
 
 #container {
-  background-color: white;
   width: 100%;
   height: 100%; }
 
 #contents {
-  background-color: gray;
   height: 100%; }
 
 #leftPane {
-  background-color: red;
+  overflow-x: hidden;
+  overflow-y: scroll;
   float: left;
   width: 250px;
+  height: 100%;
   margin-left: 0px;
   margin-right: 0px;
   margin-top: 0px;
   margin-bottom: 0px;
-  height: 100%; }
+  border-right: black solid 3px; }
+  #leftPane .listItem {
+    overflow: hidden;
+    background-color: lightgreen;
+    border-bottom: black solid 1px; }
+    #leftPane .listItem:hover {
+      background-color: white; }
 
 #rightPane {
-  background-color: green;
+  height: 100%;
   margin-left: 250px;
   margin-right: 0px;
   margin-top: 0px;
-  margin-bottom: 0px;
-  height: 100%; }
+  margin-bottom: 0px; }
+  #rightPane #canvasPane {
+    height: 70%;
+    margin: 0px;
+    margin-bottom: -3px;
+    border-bottom: black solid 3px;
+    overflow: hidden; }
+  #rightPane #messageListPane {
+    overflow-x: hidden;
+    overflow-y: scroll;
+    height: 30%;
+    margin: 0px; }

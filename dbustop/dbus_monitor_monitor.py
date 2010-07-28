@@ -44,4 +44,4 @@ class DbusMonitorMonitor(base_thread.BaseThread):
                 os.kill(child_pid, signal.SIGINT)
                 os.wait()
             except OSError as e:
-                print 'Error when killing dbus-monitor process:', e
+                print 'Error when killing dbus-monitor process from ' + self.name + ':', e

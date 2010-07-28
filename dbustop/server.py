@@ -1,65 +1,63 @@
+import os
 import socket
 import select
 import errno
 import time
 import urlparse
+import shutil
 from BaseHTTPServer import BaseHTTPRequestHandler
 
 import base_thread
 import event
 import dbus_helper
 
-#class ClientRegistrar:
-    #def __init__(self):
-        #self.clients = []
-        
-    #def register_client(self, conn, addr):
-        #conn.setblocking(0)  # set to non-blocking mode
-        ##conn.send('registered')
-        #self.clients.append((conn, addr))
-        #print 'registered client:', addr
-
-    #def remove_client(self, conn):
-        #for c in self.clients:
-            #if conn == c[0]:
-                #self.clients.remove(c)
-                #print 'removed client:', c[1]
-                #break
-
-    #def send_to_clients(self, data):
-        #for c in self.clients:
-            #conn, addr = c[0], c[1]
-            #ready_fds = select.select([conn], [conn], [])
-            #if conn in ready_fds[0]:
-                #cmd = conn.recv(4096)
-                #if cmd == 'CLOSE':
-                    #print 'CLOSE received from ', addr
-                #else:
-                    #print 'unknown command: "%s"' % cmd
-                #conn.close()
-                #self.remove_client(conn)
-            #if conn in ready_fds[1]:
-                #print 'sending to:', addr, '(%d bytes)' % len(data)
-                #try:
-                    #conn.send(data)
-                #except socket.error:
-                    #conn.close()
-                    #self.remove_client(conn)
-
-    #def close_all(self):
-        #for c in self.clients:
-            #c[0].close()
-
 class DbusHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        query = urlparse.parse_qs(urlparse.urlparse(self.path).query)
-        resp = self.handle_query(query)
+        parsed_url = urlparse.urlparse(self.path)
+        path = parsed_url.path
+        query = parsed_url.query
+        print '<%s %s>' % (path, query)
+        if path != '/ajax':
+            self.do_file_GET(path)
+        else:
+            parsed_query = urlparse.parse_qs(query)
+            resp = self.handle_query(parsed_query)
+            self.send_response(200)
+            self.send_header('Content-type', 'text/plain')
+            self.send_header('Content-Length', len(resp))
+            self.send_header('Last-Modified', self.date_time_string(time.time()))
+            self.end_headers()
+            self.request.send(resp)
+
+    def do_file_GET(self, path):
+        f = None
+        try:
+            # Always read in binary mode. Opening files in text mode may cause
+            # newline translations, making the actual size of the content
+            # transmitted *less* than the content-length!
+            f = open('web' + path, 'rb')
+        except IOError:
+            self.send_error(404, "File not found")
+            return None
+        ctype = self.get_ctype(path)
         self.send_response(200)
-        self.send_header('Content-type', 'text/plain')
-        self.send_header('Content-Length', len(resp))
-        self.send_header('Last-Modified', self.date_time_string(time.time()))
+        self.send_header("Content-type", ctype)
+        fs = os.fstat(f.fileno())
+        self.send_header("Content-Length", str(fs[6]))
+        self.send_header("Last-Modified", self.date_time_string(fs.st_mtime))
         self.end_headers()
-        self.request.send(resp)
+        shutil.copyfileobj(f, self.wfile)
+        f.close()
+
+    def get_ctype(self, fname):
+        if fname.endswith('html'):
+            return 'text/html'
+        elif fname.endswith('css'):
+            return 'text/css'
+        elif fname.endswith('js'):
+            return 'text/js'
+        else:
+            return 'text/plain'
 
     def handle_query(self, query):
         command = query['cmd'][0]
@@ -72,16 +70,14 @@ class DbusHTTPRequestHandler(BaseHTTPRequestHandler):
             pass
         elif command == 'close':
             pass
+        elif command == 'ping':
+            return 'pong'
 
 class DbustopServer(base_thread.BaseThread):
     def __init__(self, host='localhost', port=8080):
         base_thread.BaseThread.__init__(self, 'DbustopServer_thread')
         self.host = host
         self.port = port
-        #self.client_registrar = ClientRegistrar()
-        #def dbus_message_received_handler(event):
-            #self.client_registrar.send_to_clients(event.data.packetize())
-        #event.mainloop.register_event_callback('DbusMonitorMonitor_thread', 'dbus-message-received', dbus_message_received_handler)
 
     def bind_and_listen(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

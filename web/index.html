@@ -4,10 +4,13 @@
     <title>dbustop</title>
     <link href='css/screen.css' rel='stylesheet' type='text/css'>
     <script src='js/jquery-1.4.2.min.js' type='text/javascript'></script>
+    <script src='js/dbustop.js' type='text/javascript'></script>
     <script type='text/javascript'>
       //<![CDATA[
           $(document).ready(function() {
-               -#draw();
+               draw();
+               getRemoteBusNameList('session');
+               //getRemotePing();
           });
       //]]>
     </script>
@@ -15,11 +18,18 @@
   <body>
     <div id='container'>
       <div id='contents'>
-        <div class='pane' id='leftPane'>
-          hi
+        <div id='leftPane'>
+          <div id='busNameList'></div>
         </div>
-        <div class='pane' id='rightPane'>
-          hello
+        <div id='rightPane'>
+          <div id='canvasPane'>
+            <canvas id='canvas'>
+              Canvas not supported
+            </canvas>
+          </div>
+          <div id='messageListPane'>
+            messageList
+          </div>
         </div>
       </div>
     </div>

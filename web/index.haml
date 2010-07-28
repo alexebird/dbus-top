@@ -5,17 +5,21 @@
     %link{ :rel => "stylesheet", :type => "text/css", :href=> "css/screen.css" }
     %script{ :type => "text/javascript", :src => "js/jquery-1.4.2.min.js" }
     -#%script{ :type => "text/javascript", :src => "js/processing-0.9.4.min.js" }
-    -#%script{ :type => "text/javascript", :src => "js/dbustop.js" }
+    %script{ :type => "text/javascript", :src => "js/dbustop.js" }
     :javascript
         $(document).ready(function() {
-             -#draw();
+             draw();
+             getRemoteBusNameList('session');
+             //getRemotePing();
         });
   %body
     #container
       #contents
-        #leftPane.pane
-          hi
-        #rightPane.pane
-          hello
-          -#%canvas#canvas
-            Canvas not supported
+        #leftPane
+          #busNameList
+        #rightPane
+          #canvasPane
+            %canvas#canvas
+              Canvas not supported
+          #messageListPane
+            messageList

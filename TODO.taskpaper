@@ -1,13 +1,18 @@
+Action Plan:
+- layout page
+- use ajax to get list of all bus names and populate the page
+- figure out how to keep track of messages sent to client
+
 Todo:
 - figure out why dbus-monitor processes are sticking around
 - write parser for dbus messages @done
 	- think 536 @done
-- write wiki page for project
+- write wiki page for project @done
 - write cursesUI code, need separate thread possibly for UI.  use MVC. @done
 - How to setup threads so that the UI thread and network thread fire events to the contoller (in the main thread)? @done
     im trying to model the way java does threads.  possibly use python
     Event or CVs.
-- Make client and server binaries use event loop arch. like we talked about
+- Make client and server binaries use event loop arch. like we talked about @done
 	-> main thread only sets things up
 	-> separte thread runs event loop
 	-> use socket and FD for inter-thread comm

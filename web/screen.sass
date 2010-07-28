@@ -1,44 +1,62 @@
 @import reset.css
 
 html, body
-  margin: 0px
-  padding: 0px
   height: 100%
-
-=tall
-  height: 100%
-  //min-height: 100%
-
-=bordered
-  border: black solid 1px
 
 #container
-  background-color: white
   width: 100%
-  +tall
+  height: 100%
 
 #contents
-  background-color: gray
-  +tall
+  height: 100%
 
 !leftPaneWidth = 250px
 
 #leftPane
-  background-color: red
+  overflow-x: hidden
+  overflow-y: scroll
   float: left
   width= !leftPaneWidth
+  height: 100%
   margin:
     :left 0px
     :right 0px
     :top 0px
     :bottom 0px
-  +tall
+  border:
+    :right black solid 3px
 
+  .listItem
+    overflow: hidden
+    background-color: lightgreen
+    &:hover
+      background-color: white
+    border:
+      :bottom black solid 1px
+
+
+!messageListHeight = 30%
 #rightPane
-  background-color: green
+  //background-color: green
+  height: 100%
   margin:
     :left= !leftPaneWidth + 0px
     :right 0px
     :top 0px
     :bottom 0px
-  +tall
+
+  #canvasPane
+    //background-color: whi
+    height= 100 - !messageListHeight
+    margin: 0px
+    margin-bottom: -3px
+    border:
+      :bottom black solid 3px
+    overflow: hidden
+  #messageListPane
+    overflow-x: hidden
+    overflow-y: scroll
+    //background-color: yellow
+    height= !messageListHeight
+    margin: 0px
+
