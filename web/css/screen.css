@@ -26,6 +26,17 @@ html, body {
     border-bottom: black solid 1px; }
     #leftPane .listItem:hover {
       background-color: white; }
+    #leftPane .listItem .clientName {
+      float: left;
+      width: 93%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis; }
+    #leftPane .listItem .addOrRemoveButton {
+      float: left;
+      font-weight: bold;
+      font-family: monospace;
+      font-size: 18px; }
 
 #rightPane {
   height: 100%;

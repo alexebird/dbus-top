@@ -9,18 +9,30 @@ var canvas;
 var ctx;
 var clientList;
 
+// Create a point object from a set of coordinates.
+function createPoint(x, y) {
+    var o = new Object;
+    o.x = x;
+    o.y = y;
+    return o;
+}
+
 ///////////////////// begin class Client /////////////////////
 // Contsructor
 function Client(name) {
     this.drawOnCanvas = false;
     this.name = name;
-    jqElement = $("<div class='listItem'>" + this.name + "</div>");
+    jqElement = $("<div class='listItem'><div class='clientName'>" + this.name + "</div><div class='addOrRemoveButton'>+</div></div>");
     this.domElement = jqElement.get(0);
     jqElement.data('client', this);
     jqElement.click(function () {
-        client = $(this).data('client');
+        client = $(this).data('client');  // get the Client object.
         client.drawOnCanvas = ! client.drawOnCanvas;
-        //alert(client.drawOnCanvas);
+        var symbol = "+";
+        if (client.drawOnCanvas) {
+            symbol = "-";
+        }
+        $(client.domElement).find(".addOrRemoveButton").html(symbol);
         clientList.update();
     });
     this.locationX = 10;
@@ -29,6 +41,15 @@ function Client(name) {
     ctx.font = "12pt sans-serif";
     this.nameWidth = Math.ceil(ctx.measureText(this.name).width);
     this.width = this.nameWidth + 40;
+}
+
+// Method
+Client.prototype.asPolygon = function () {
+    var topLeft = createPoint(this.locationX, this.locationY);
+    var topRight = createPoint(this.locationX + this.width, this.locationY);
+    var bottomRight = createPoint(this.locationX + this.width, this.locationY + this.height);
+    var bottomLeft = createPoint(this.locationX, this.locationY + this.height);
+    return [topLeft, topRight, bottomRight, bottomLeft];
 }
 
 // Method
@@ -41,7 +62,7 @@ Client.prototype.draw = function () {
     ctx.fillStyle = "rgb(255, 0, 0)";
     ctx.fillRect(this.locationX, this.locationY, this.width, this.height);
     ctx.fillStyle = "rgb(0, 0, 0)";
-    ctx.fillText(this.name, this.locationX + 20, this.locationY + this.height / 2);
+    ctx.fillText(this.name, this.locationX + 20, this.locationY + this.height / 2.0);
 }
 ///////////////////// end class
 
@@ -102,10 +123,39 @@ function getRemoteMessages() {
     });
 }*/
 
+function translateEventCoords(e) {
+    var offset = $(canvas).offset();
+    var rv = new Object;
+    rv.pageX = e.pageX - offset.left;
+    rv.pageY = e.pageY - offset.top;
+    return rv;
+}
+
 function initCanvas() {
     canvas = document.getElementById('canvas');
     if (canvas.getContext) {
         ctx = canvas.getContext('2d');
+        resizeCanvas = function() {
+            canvasPane = $('#canvasPane');
+            canvas.setAttribute('width', canvasPane.width() - 2);
+            canvas.setAttribute('height', canvasPane.height() - 2);
+        }
+        resizeCanvas();
+        $(window).resize(resizeCanvas);
+
+        $(canvas).mousemove(function (e) {
+            var trans = translateEventCoords(e);
+            $("#messageListPane").html("(" + trans.pageX + ", " + trans.pageY + ")");
+        });
+
+        $(canvas).mousedown(function (e) {
+            var trans = translateEventCoords(e);
+            $("#messageListPane").append("mousedown(" + trans.pageX + ", " + trans.pageY + ")");
+        });
+        $(canvas).mouseup(function (e) {
+            var trans = translateEventCoords(e);
+            $("#messageListPane").append("mouseup(" + trans.pageX + ", " + trans.pageY + ")");
+        });
     }
 }
 
@@ -113,4 +163,20 @@ function clearCanvas() {
     w = canvas.width;
     h = canvas.height;
     ctx.clearRect(0, 0, w, h);
+}
+
+//+ Jonas Raoni Soares Silva
+//@ http://jsfromhell.com/math/is-point-in-poly [rev. #0]
+//
+//Checks whether the point is inside the polygon.
+//
+//polygon, array of points, each element must be an object with two properties (x and y)
+//point, object with two properties (x and y)
+
+function isPointInPoly(poly, pt){
+    for(var c = false, i = -1, l = poly.length, j = l - 1; ++i < l; j = i)
+      ((poly[i].y <= pt.y && pt.y < poly[j].y) || (poly[j].y <= pt.y && pt.y < poly[i].y))
+      && (pt.x < (poly[j].x - poly[i].x) * (pt.y - poly[i].y) / (poly[j].y - poly[i].y) + poly[i].x)
+        && (c = !c);
+    return c;
 }

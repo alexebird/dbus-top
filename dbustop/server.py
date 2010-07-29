@@ -35,6 +35,7 @@ class DbusHTTPRequestHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.send_header('Content-Length', len(resp))
+            self.send_header('Cache-Control', 'no-cache')
             self.send_header('Last-Modified', self.date_time_string(time.time()))
             self.end_headers()
             self.request.send(resp)

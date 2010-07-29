@@ -33,7 +33,17 @@ html, body
       background-color: white
     border:
       :bottom black solid 1px
-
+    .clientName
+      float: left
+      width: 93%
+      white-space: nowrap
+      overflow: hidden
+      text-overflow: ellipsis
+    .addOrRemoveButton
+      float: left
+      font-weight: bold
+      font-family: monospace
+      font-size: 18px
 
 !messageListHeight = 30%
 #rightPane
@@ -53,6 +63,8 @@ html, body
     border:
       :bottom black solid 3px
     overflow: hidden
+    //#canvas
+      //border: solid 1px red
   #messageListPane
     overflow-x: hidden
     overflow-y: scroll
