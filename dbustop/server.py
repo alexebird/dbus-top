@@ -6,10 +6,20 @@ import time
 import urlparse
 import shutil
 from BaseHTTPServer import BaseHTTPRequestHandler
+from Queue import Queue
 
 import base_thread
 import event
 import dbus_helper
+
+class MessageQueue(Queue):
+    def __init__(self):
+        Queue.__init__(self)
+        def message_arrived_handler(event):
+            self.put(event.data)
+        event.mainloop.register_event_callback('dbus-message-received', message_arrived_handler)
+
+message_queue = MessageQueue()
 
 class DbusHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -23,7 +33,7 @@ class DbusHTTPRequestHandler(BaseHTTPRequestHandler):
             parsed_query = urlparse.parse_qs(query)
             resp = self.handle_query(parsed_query)
             self.send_response(200)
-            self.send_header('Content-type', 'text/plain')
+            self.send_header('Content-type', 'application/json')
             self.send_header('Content-Length', len(resp))
             self.send_header('Last-Modified', self.date_time_string(time.time()))
             self.end_headers()
@@ -55,21 +65,21 @@ class DbusHTTPRequestHandler(BaseHTTPRequestHandler):
         elif fname.endswith('css'):
             return 'text/css'
         elif fname.endswith('js'):
-            return 'text/js'
+            return 'application/x-javascript'
         else:
             return 'text/plain'
 
     def handle_query(self, query):
         command = query['cmd'][0]
-        if command == 'register':
-            pass
-        elif command == 'list':
+        if command == 'list':
             bus = query['bus'][0]
             return dbus_helper.list_services(bus)
-        elif command == 'update':
-            pass
-        elif command == 'close':
-            pass
+        elif command == 'msg':
+            json_resp = []
+            while not message_queue.empty():
+                json_resp.append(message_queue.get().json_str())
+            print 'sent %d messages' % len(json_resp)
+            return '[' + ', '.join(json_resp) + ']'
         elif command == 'ping':
             return 'pong'
 

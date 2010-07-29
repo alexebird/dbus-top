@@ -4,13 +4,13 @@
     %title dbustop
     %link{ :rel => "stylesheet", :type => "text/css", :href=> "css/screen.css" }
     %script{ :type => "text/javascript", :src => "js/jquery-1.4.2.min.js" }
-    -#%script{ :type => "text/javascript", :src => "js/processing-0.9.4.min.js" }
     %script{ :type => "text/javascript", :src => "js/dbustop.js" }
+    -#%script{ :type => "text/javascript", :src => "js/processing-0.9.4.min.js" }
     :javascript
         $(document).ready(function() {
-             draw();
+             initCanvas();
              getRemoteBusNameList('session');
-             //getRemotePing();
+             getRemoteMessages();
         });
   %body
     #container

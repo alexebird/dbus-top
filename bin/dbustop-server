@@ -28,13 +28,13 @@ def main():
         if server.bind_and_listen():
             server.start()
         else:
-            dbustop.mainloop.add_event(dbustop.event.Event('main()', 'shutdown', 'DbusServer listen failed.'))
+            dbustop.mainloop.add_event('main()', 'shutdown', 'DbusServer listen failed.')
 
     dbustop.mainloop.register_child_thread(sesh_monitor)
     dbustop.mainloop.register_child_thread(sys_monitor)
-    dbustop.mainloop.register_event_callback('main()', 'event-loop-ready', start_dbus_monitors)
+    dbustop.mainloop.register_event_callback('event-loop-ready', start_dbus_monitors)
     dbustop.mainloop.register_child_thread(server)
-    dbustop.mainloop.register_event_callback('main()', 'event-loop-ready', start_server)
+    dbustop.mainloop.register_event_callback('event-loop-ready', start_server)
     dbustop.mainloop.start()
     run_signal_handler_loop()
     dbustop.mainloop.join()
@@ -62,7 +62,7 @@ def run_signal_handler_loop():
             break
         if sig_fd_r in ready_fds[0]:
             signum = struct.unpack('i', os.read(sig_fd_r, 4))[0]
-            dbustop.mainloop.add_event(dbustop.event.Event('SignalHandler_thread', 'shutdown', signum))
+            dbustop.mainloop.add_event('SignalHandler_thread', 'shutdown', signum)
 
 def handle_args():
     parser = OptionParser()

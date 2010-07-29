@@ -32,9 +32,9 @@ class EventLoop(base_thread.BaseThread):
                 if t.is_alive():
                     t.join()
             self.should_run = False
-        self.register_event_callback(self.name, 'shutdown', shutdown_handler)
+        self.register_event_callback('shutdown', shutdown_handler)
 
-        self.add_event(Event('main()', 'event-loop-ready', None))
+        self.add_event('EventLoop#init', 'event-loop-ready')
 
     def run(self):
         while self.should_run:
@@ -53,18 +53,15 @@ class EventLoop(base_thread.BaseThread):
     def register_child_thread(self, thread):
         self.__child_threads.append(thread)
 
-    def add_event(self, new_event):
-        self.event_queue.put(new_event)
+    def add_event(self, origin, type, data=None):
+        self.event_queue.put(Event(origin, type, data))
 
-    def register_event_callback(self, origin, type, callback):
-        if origin == '':
-            origin = None
-        key = type
+    def register_event_callback(self, type, callback):
         callback_list = None
         try:
-            callback_list = self.event_callback_dict[key]
+            callback_list = self.event_callback_dict[type]
         except KeyError:
-            self.event_callback_dict[key] = callback_list = []
+            self.event_callback_dict[type] = callback_list = []
         callback_list.append(callback)
 
 class EventQueue(Queue):

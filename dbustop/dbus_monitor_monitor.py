@@ -33,10 +33,10 @@ class DbusMonitorMonitor(base_thread.BaseThread):
                     line = dbm_file.readline().rstrip()
                     if line:
                         msg = dbus_message.parse(line)
-                        print 'line:', line
+                        #print 'line:', line
                         if msg:
-                            print 'message:', msg
-                            event.mainloop.add_event(event.Event(self.name, 'dbus-message-received', msg))
+                            #print 'message:', msg
+                            event.mainloop.add_event(self.name, 'dbus-message-received', msg)
                 if event.mainloop.child_thread_control_socket in ready_fds[0]:
                     print 'exiting', self.name
                     break
