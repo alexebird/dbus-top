@@ -22,10 +22,9 @@ html, body {
   border-right: black solid 3px; }
   #leftPane .listItem {
     overflow: hidden;
-    background-color: lightgreen;
     border-bottom: black solid 1px; }
     #leftPane .listItem:hover {
-      background-color: white; }
+      background-color: lightgray; }
     #leftPane .listItem .clientName {
       float: left;
       width: 93%;

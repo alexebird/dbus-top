@@ -8,9 +8,9 @@
     <script type='text/javascript'>
       //<![CDATA[
           $(document).ready(function() {
-               initCanvas();
+               init();
                getRemoteBusNameList('session');
-               getRemoteMessages();
+               //getRemoteMessages();
           });
       //]]>
     </script>
@@ -18,6 +18,9 @@
   <body>
     <div id='container'>
       <div id='contents'>
+        <div id='log' style='border-bottom: black solid 1px; font-family: monospace; overflow: hidden;'>
+          log
+        </div>
         <div id='leftPane'>
           <div id='busNameList'></div>
         </div>

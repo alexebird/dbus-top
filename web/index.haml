@@ -5,16 +5,17 @@
     %link{ :rel => "stylesheet", :type => "text/css", :href=> "css/screen.css" }
     %script{ :type => "text/javascript", :src => "js/jquery-1.4.2.min.js" }
     %script{ :type => "text/javascript", :src => "js/dbustop.js" }
-    -#%script{ :type => "text/javascript", :src => "js/processing-0.9.4.min.js" }
     :javascript
         $(document).ready(function() {
-             initCanvas();
+             init();
              getRemoteBusNameList('session');
-             getRemoteMessages();
+             //getRemoteMessages();
         });
   %body
     #container
       #contents
+        #log{:style => "border-bottom: black solid 1px; font-family: monospace; overflow: hidden;"}
+          log
         #leftPane
           #busNameList
         #rightPane
