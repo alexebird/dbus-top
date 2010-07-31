@@ -14,7 +14,7 @@
   %body
     #container
       #contents
-        #log{:style => "border-bottom: black solid 1px; font-family: monospace; overflow: hidden;"}
+        -##log{:style => "border-bottom: black solid 1px; font-family: monospace; overflow: hidden;"}
           log
         #leftPane
           #busNameList
@@ -22,5 +22,8 @@
           #canvasPane
             %canvas#canvas
               Canvas not supported
-          #messageListPane
-            messageList
+          #messagePane
+            %ul#messageListControls
+              %li#updateMessages Update
+            #messageList
+

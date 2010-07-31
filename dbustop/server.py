@@ -76,9 +76,16 @@ class DbusHTTPRequestHandler(BaseHTTPRequestHandler):
             bus = query['bus'][0]
             return dbus_helper.list_services(bus)
         elif command == 'msg':
+            #json_resp = []
+            #while not message_queue.empty():
+                #json_resp.append(message_queue.get().json_str())
+            #print 'sent %d messages' % len(json_resp)
+            #return '[' + ', '.join(json_resp) + ']'
             json_resp = []
-            while not message_queue.empty():
+            i = 0
+            while i < 10:
                 json_resp.append(message_queue.get().json_str())
+                i += 1
             print 'sent %d messages' % len(json_resp)
             return '[' + ', '.join(json_resp) + ']'
         elif command == 'ping':

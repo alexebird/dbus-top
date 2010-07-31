@@ -8,6 +8,7 @@
 // The main objects representing the UI.
 var g_canvas;
 var g_clientList;
+var g_messageList;
 
 /**
  * Initialize the UI.
@@ -15,7 +16,12 @@ var g_clientList;
 function init() {
     g_canvas = new CanvasClass;
     g_canvas.resizeCanvasToWindow();
-    g_clientList = new ClientList('busNameList');
+    g_clientList = new DivList('busNameList');
+    g_messageList = new DivList('messageList');
+
+    $("#updateMessages").click(function () {
+        getRemoteMessages();
+    });
 }
 
 /**
@@ -40,8 +46,9 @@ function getRemoteBusNameList(bus) {
 function getRemoteMessages() {
     $.getJSON('/ajax', {"cmd": "msg"}, function(data, textStatus, XMLHttpRequest) {
         //alert(data.length);
-        //busNameList.names = data;
-        //busNameList.update();
+        for (var i = 0; i <  data.length; i++) {
+            g_messageList.add(new DbusMessage(data[i]));
+        }
     });
 }
 
@@ -62,11 +69,53 @@ function getRemoteMessages() {
  */
 function isPointInPoly(poly, pt){
     for(var c = false, i = -1, l = poly.length, j = l - 1; ++i < l; j = i)
-      ((poly[i].y <= pt.y && pt.y < poly[j].y) || (poly[j].y <= pt.y && pt.y < poly[i].y))
-      && (pt.x < (poly[j].x - poly[i].x) * (pt.y - poly[i].y) / (poly[j].y - poly[i].y) + poly[i].x)
-        && (c = !c);
+        ((poly[i].y <= pt.y && pt.y < poly[j].y) || (poly[j].y <= pt.y && pt.y < poly[i].y))
+          && (pt.x < (poly[j].x - poly[i].x) * (pt.y - poly[i].y) / (poly[j].y - poly[i].y) + poly[i].x)
+          && (c = !c);
     return c;
 }
+
+/*******************************************************************************
+ * begin class DbusMessage
+ */
+// Contsructor
+function DbusMessage(jsonMsg) {
+    this.message_type = jsonMsg['message_type'];
+    this.timestamp = jsonMsg['timestamp'];
+    this.serial = jsonMsg['serial'];
+
+    var html = "<div class='divListItem'>";
+    html += "<div class='message'>" + this.message_type + ", ";
+    html += this.serial;
+    html += "</div>";
+    jqElement = $(html);
+    this.domElement = jqElement.get(0);
+    jqElement.data('message', this);
+}
+
+DbusMessage.prototype.buildSignal = function(jsonMsg) {
+    this.objectPath = jsonMsg['object'];
+    this.interface = jsonMsg['interface'];
+    this.member = jsonMsg['member'];
+}
+
+DbusMessage.prototype.buildMethodCall = function(jsonMsg) {
+    this.sender = jsonMsg['sender'];
+    this.objectPath = jsonMsg['object'];
+    this.interface = jsonMsg['interface'];
+    this.member = jsonMsg['member'];
+}
+
+DbusMessage.prototype.buildMethodReturn = function(jsonMsg) {
+    this.replySerial= jsonMsg['reply_serial'];
+    this.destination = jsonMsg['destination'];
+}
+
+DbusMessage.prototype.buildError = function(jsonMsg) {
+    this.replySerial= jsonMsg['reply_serial'];
+    this.destination = jsonMsg['destination'];
+}
+/* end Class */
 
 /*******************************************************************************
  * begin class Client
@@ -75,7 +124,10 @@ function isPointInPoly(poly, pt){
 function Client(name) {
     this.drawOnCanvas = false;
     this.name = name;
-    jqElement = $("<div class='listItem'><div class='clientName'>" + this.name + "</div><div class='addOrRemoveButton'>+</div></div>");
+    var html = "<div class='divListItem'>";
+    html += "<div class='clientName'>" + this.name + "</div>";
+    html += "<div class='addOrRemoveButton'>+</div></div>";
+    jqElement = $(html);
     this.domElement = jqElement.get(0);
     jqElement.data('client', this);
     jqElement.click(function () {
@@ -85,10 +137,12 @@ function Client(name) {
         if (client.drawOnCanvas) {
             symbol = "-";
             g_canvas.addDrawnObject(client);
+            $(client.domElement).find(".addOrRemoveButton").addClass("removeMinusSign");
         }
         else {
             var symbol = "+";
             g_canvas.removeDrawnObject(client);
+            $(client.domElement).find(".addOrRemoveButton").removeClass("removeMinusSign");
         }
         $(client.domElement).find(".addOrRemoveButton").html(symbol);
         g_canvas.draw();
@@ -156,31 +210,25 @@ Client.prototype.draw = function (context) {
 /* end Class */
 
 /*******************************************************************************
- * begin class ClientList
+ * begin class DivList
+ *
+ * Maintains an HTML div that is a list UI element.
  */
 // Contsructor
-function ClientList(divId) {
-    this.clients = [];
-    this.jqListDivId = $('#' + divId);
+function DivList(divId) {
+    this.items = [];
+    this.jqDivListDivId = $('#' + divId);
+    this.jqDivListDivId.addClass('divList');
 }
 
-// Method
-//ClientList.prototype.update = function () {
-    //for (var i = 0; i < this.clients.length; i++) {
-        //c = this.clients[i]; 
-    //}
-//}
-
-// Method
-ClientList.prototype.add = function (client) {
-    this.clients.push(client);
-    $(client.domElement).appendTo(this.jqListDivId);
+DivList.prototype.add = function (item) {
+    this.items.push(item);
+    $(item.domElement).appendTo(this.jqDivListDivId);
 }
 
-// Method
-ClientList.prototype.clear = function () {
-    this.clients = [];
-    $(this.jqListDivId).empty();
+DivList.prototype.clear = function () {
+    this.items = [];
+    $(this.jqDivListDivId).empty();
 }
 /* end Class */
 

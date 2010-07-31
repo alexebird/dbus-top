@@ -9,6 +9,12 @@ html, body {
 #contents {
   height: 100%; }
 
+.divList .divListItem {
+  overflow: hidden;
+  border-bottom: black solid 1px; }
+  .divList .divListItem:hover {
+    background-color: lightgray; }
+
 #leftPane {
   overflow-x: hidden;
   overflow-y: scroll;
@@ -20,22 +26,23 @@ html, body {
   margin-top: 0px;
   margin-bottom: 0px;
   border-right: black solid 3px; }
-  #leftPane .listItem {
-    overflow: hidden;
-    border-bottom: black solid 1px; }
-    #leftPane .listItem:hover {
-      background-color: lightgray; }
-    #leftPane .listItem .clientName {
-      float: left;
-      width: 93%;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis; }
-    #leftPane .listItem .addOrRemoveButton {
-      float: left;
-      font-weight: bold;
-      font-family: monospace;
-      font-size: 18px; }
+
+.clientName {
+  float: left;
+  width: 93%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; }
+
+.addOrRemoveButton {
+  float: left;
+  font-weight: bold;
+  font-family: monospace;
+  font-size: 18px;
+  color: green; }
+
+.removeMinusSign {
+  color: red; }
 
 #rightPane {
   height: 100%;
@@ -43,14 +50,35 @@ html, body {
   margin-right: 0px;
   margin-top: 0px;
   margin-bottom: 0px; }
-  #rightPane #canvasPane {
-    height: 70%;
-    margin: 0px;
-    margin-bottom: -3px;
-    border-bottom: black solid 3px;
-    overflow: hidden; }
-  #rightPane #messageListPane {
+
+#messagePane {
+  height: 29%;
+  margin: 0px; }
+  #messagePane #messageListControls {
+    font-family: sans-serif;
+    margin-top: 3px;
+    margin-bottom: 0px;
+    border-bottom: black solid 1px;
+    padding-bottom: 0px; }
+    #messagePane #messageListControls li {
+      cursor: pointer; }
+    #messagePane #messageListControls #updateMessages {
+      display: inline;
+      list-style-type: none;
+      padding-right: 10px;
+      padding-left: 10px;
+      background-color: black;
+      color: white; }
+      #messagePane #messageListControls #updateMessages:hover {
+        background-color: gray; }
+  #messagePane #messageList {
     overflow-x: hidden;
     overflow-y: scroll;
-    height: 30%;
-    margin: 0px; }
+    height: 88%; }
+
+#canvasPane {
+  height: 70%;
+  margin: 0px;
+  margin-bottom: -3px;
+  border-bottom: black solid 3px;
+  overflow: hidden; }

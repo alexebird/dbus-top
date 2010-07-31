@@ -10,8 +10,15 @@ html, body
 #contents
   height: 100%
 
-!leftPaneWidth = 250px
+.divList
+  .divListItem
+    overflow: hidden
+    &:hover
+      background-color: lightgray
+    border:
+      :bottom black solid 1px
 
+!leftPaneWidth = 250px
 #leftPane
   overflow-x: hidden
   overflow-y: scroll
@@ -26,27 +33,24 @@ html, body
   border:
     :right black solid 3px
 
-  .listItem
-    overflow: hidden
-    &:hover
-      background-color: lightgray
-    border:
-      :bottom black solid 1px
-    .clientName
-      float: left
-      width: 93%
-      white-space: nowrap
-      overflow: hidden
-      text-overflow: ellipsis
-    .addOrRemoveButton
-      float: left
-      font-weight: bold
-      font-family: monospace
-      font-size: 18px
+.clientName
+  float: left
+  width: 93%
+  white-space: nowrap
+  overflow: hidden
+  text-overflow: ellipsis
 
-!messageListHeight = 30%
+.addOrRemoveButton
+  float: left
+  font-weight: bold
+  font-family: monospace
+  font-size: 18px
+  color: green
+
+.removeMinusSign
+  color: red
+
 #rightPane
-  //background-color: green
   height: 100%
   margin:
     :left= !leftPaneWidth + 0px
@@ -54,20 +58,43 @@ html, body
     :top 0px
     :bottom 0px
 
-  #canvasPane
-    //background-color: whi
-    height= 100 - !messageListHeight
-    margin: 0px
-    margin-bottom: -3px
-    border:
-      :bottom black solid 3px
-    overflow: hidden
-    //#canvas
-      //border: solid 1px red
-  #messageListPane
+!messageListHeight = 30%
+#messagePane
+  height= !messageListHeight - 1
+  margin: 0px
+
+  #messageListControls
+    font-family: sans-serif
+    margin:
+      :top 3px
+      :bottom 0px
+    border-bottom: black solid 1px
+    padding:
+      bottom: 0px
+
+    li
+      cursor: pointer
+
+    #updateMessages
+      display: inline
+      list-style-type: none
+      padding:
+        :right 10px
+        :left 10px
+      background-color: black
+      color: white
+      &:hover
+        background-color: gray
+
+  #messageList
     overflow-x: hidden
     overflow-y: scroll
-    //background-color: yellow
-    height= !messageListHeight
-    margin: 0px
+    height: 88%
 
+#canvasPane
+  height= 100 - !messageListHeight
+  margin: 0px
+  margin-bottom: -3px
+  border:
+    :bottom black solid 3px
+  overflow: hidden
